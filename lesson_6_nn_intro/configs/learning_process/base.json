@@ -1,0 +1,21 @@
+{
+    "dataset_params": {
+        "train_fraction": 0.9,
+        "new_size": [64, 64],
+        "train_batch_size": 100,
+        "val_batch_size": 100
+    },   
+    "hyper_params": {
+        "loss": {
+            "loss_type": "MSELoss",
+            "params": {}
+        },
+        "optimizer": {
+            "optimizer_type": "SGD",
+            "params": {
+                "lr": 0.1
+            }
+        },
+        "epoch_nums": 20
+    }
+}
