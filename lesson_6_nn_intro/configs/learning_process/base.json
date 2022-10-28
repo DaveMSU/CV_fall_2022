@@ -2,7 +2,7 @@
     "dataset_params": {
         "train_fraction": 0.9,
         "new_size": [64, 64],
-        "train_batch_size": 100,
+        "train_batch_size": 512,
         "val_batch_size": 100
     },   
     "hyper_params": {
@@ -11,11 +11,11 @@
             "params": {}
         },
         "optimizer": {
-            "optimizer_type": "SGD",
+            "optimizer_type": "Adam",
             "params": {
-                "lr": 0.1
+                "lr": 0.0003
             }
         },
-        "epoch_nums": 20
+        "epoch_nums": 100
     }
 }
