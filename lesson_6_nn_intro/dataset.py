@@ -15,7 +15,8 @@ class ImagePointsDataset(torch.utils.data.Dataset):
             train_fraction: float,
             data_dir: pathlib.PosixPath,
             train_gt: tp.Dict[str, np.ndarray],
-            new_size: tp.Tuple[int, int] = (64, 64)
+            new_size: tp.Tuple[int, int] = (64, 64),
+            transforms: tp.Optional[tp.List[tp.Callable]] = None
     ):
         assert data_dir.exists(), f"Dir '{data_dir}' do not exists!"
         
@@ -34,6 +35,8 @@ class ImagePointsDataset(torch.utils.data.Dataset):
             assert pair["path"].exists(), f"File '{pair['path']}' do not exists!"
             
         train_size = round(len(self._items) * train_fraction)
+
+        self._transforms = t if isinstance((t := transforms), list) and len(t) else None
 
         self._mode = mode        
         if mode == "train":
@@ -73,6 +76,9 @@ class ImagePointsDataset(torch.utils.data.Dataset):
 
         ## Load image.
         image = Image.open(img_path).convert('RGB')
+        if self._transforms:
+            for transform in self._transforms:
+                image, target = transform(image, target)
         image = np.array(image).astype(np.float32) / 255.
         
         # Change shapes.
@@ -82,7 +88,7 @@ class ImagePointsDataset(torch.utils.data.Dataset):
         if self._mode != "test":
             target[::2] = target[::2] / orig_shape[0]
             target[1::2] = target[1::2] / orig_shape[1]
-        
+
         # Convert to tensor.
         image = torch.from_numpy(image.transpose(2, 0, 1))
         if image.size(0) == 1:

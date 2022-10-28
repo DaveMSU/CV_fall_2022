@@ -1,0 +1,36 @@
+{
+    "dataset_params": {
+        "train_fraction": 0.9,
+        "new_size": [64, 64],
+        "train_batch_size": 512,
+        "val_batch_size": 100,
+        "augmentation": [
+            {
+                "transform_type": "FacePointsRandomHorizontalFlipTransform",
+                "params": {
+                    "p": 0.5
+                }
+            },
+            {
+                "transform_type": "FacePointsRandomCropTransform",
+                "params": {
+                    "crop_sizes": [0.8, 0.8],
+                    "skip": true
+                }
+            }
+        ]
+    },
+    "hyper_params": {
+        "loss": {
+            "loss_type": "MSELoss",
+            "params": {}
+        },
+        "optimizer": {
+            "optimizer_type": "Adam",
+            "params": {
+                "lr": 0.0003
+            }
+        },
+        "epoch_nums": 100
+    }
+}

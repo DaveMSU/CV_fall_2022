@@ -3,8 +3,18 @@
         "train_fraction": 0.9,
         "new_size": [64, 64],
         "train_batch_size": 512,
-        "val_batch_size": 100
-    },   
+        "val_batch_size": 100,
+        "augmentation": [
+            {
+                "transform_type": "FacePointsRandomCropTransform",
+                "params": {
+                    "crop_sizes": [0.85, 0.85],
+                    "p": 0.35,
+                    "skip": true
+                }
+            }
+        ]
+    },
     "hyper_params": {
         "loss": {
             "loss_type": "MSELoss",
