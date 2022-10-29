@@ -51,7 +51,7 @@ def main():
                 dataset_tools += line
         dataset_tools = f"{dataset_tools.strip()}\n" + "\n\n"
 
-    with open("./model.py", "r") as f:
+    with open("../net_factory.py", "r") as f:
         model_tools = ""
         for line in f.readlines():
             if 'import' not in line:
