@@ -1,66 +1,27 @@
-import pathlib
+import sys; sys.path.append('../')
+
 import typing as tp
 
 import cv2
 import torch
 import numpy as np
 from PIL import Image
+from matplotlib import pyplot as plt
+
+from base_dataset import BaseImageDataset
 
 
-class ImageClassifyDataset(torch.utils.data.Dataset):
-    def __init__(
-            self,
-            mode: str,
-            train_fraction: float,
-            data_dir: pathlib.PosixPath,
-            train_gt: tp.Dict[str, np.ndarray],
-            new_size: tp.Tuple[int, int] = (64, 64)
-    ):
-        assert data_dir.exists(), f"Dir '{data_dir}' do not exists!"
-        
-        self._items = [
-            {
-                "path": data_dir/file_name,
-                "target": class_
-            }
-            for file_name, class_ in train_gt.items()
-        ]
+class ImageClassifyDataset(BaseImageDataset):
+    def __init__(self, classes_num: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        assert self._transforms is None, "Transforms haven't supported yet."    
+        self._classes_num = classes_num
 
-        np.random.seed(7)
-        self._items = np.random.permutation(self._items)
-        
-        for pair in self._items:
-            assert pair["path"].exists(), f"File '{pair['path']}' do not exists!"
-            
-        train_size = round(len(self._items) * train_fraction)
 
-        self._mode = mode        
-        if mode == "train":
-            self._items = self._items[:train_size]
-        elif mode == "val":
-            self._items = self._items[train_size:]
-        elif mode == "test":
-            pass
-        else:
-            assert f"Mode '{mode}' undefined!"
-            
-        self._X_size = new_size[0]
-        self._Y_size = new_size[1]
-
-    
     @property
-    def paths(self) -> tp.List[str]:
-        return [pair["path"] for pair in self._items]
-        
-    
-    @property
-    def shape(self) -> tp.Tuple[int, int]:
-        return (self._X_size, self._Y_size)
-    
-    
-    def __len__(self):
-        return len(self._items)
-    
+    def classes_num(self):
+        return self._classes_num
+
     
     def __getitem__(
             self,
@@ -72,18 +33,27 @@ class ImageClassifyDataset(torch.utils.data.Dataset):
 
         ## Load image.
         image = Image.open(img_path).convert('RGB')
+        if self._transforms:
+            for transform in self._transforms:
+                image, target = transform(image, target)
         image = np.array(image).astype(np.float32) / 255.
         
         # Change shapes.
         orig_shape = image.shape
         self._items[index]["shape"] = orig_shape
-        image = cv2.resize(image, (self._X_size, self._Y_size))
-        
+        new_X_size = self._X_size if self._X_size else orig_shape[0]
+        new_Y_size = self._Y_size if self._Y_size else orig_shape[1]
+        image = cv2.resize(image, (new_X_size, new_Y_size))
+
         # Convert to tensor.
         image = torch.from_numpy(image.transpose(2, 0, 1))
         if image.size(0) == 1:
-            image = image.repeat(3, 1, 1)        
-        target = torch.from_numpy(target.astype(np.float32))
+            image = image.repeat(3, 1, 1)
+
+        # Do one hot encoding of the target.
+        blank_line = np.zeros(self._classes_num, dtype=np.float32)
+        blank_line[int(target)] = 1.0
+        target = torch.from_numpy(blank_line.copy())
         
         return image, target, torch.Tensor(orig_shape)
 
