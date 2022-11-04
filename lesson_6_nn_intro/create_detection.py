@@ -19,6 +19,7 @@ def main():
 
     libs = dedent(
         """\
+            import copy
             import pathlib
             import typing as tp
 
@@ -42,7 +43,17 @@ def main():
     consts = (
         f"""NET_ARCHITECTURE = {net_arch.strip()}\n""" + "\n\n"
         f"""LEARNING_PROCESS = {learning_process.strip()}\n""" + "\n\n"
-    )
+    )\
+    .replace("true", "True")\
+    .replace("false", "False")\
+    .replace("null", "None")
+    
+    with open("../base_dataset.py", "r") as f:
+        base_dataset_tools = ""
+        for line in f.readlines():
+            if 'import' not in line:
+                base_dataset_tools += line
+        base_dataset_tools = f"{base_dataset_tools.strip()}\n" + "\n\n"
 
     with open("./dataset.py", "r") as f:
         dataset_tools = ""
@@ -57,6 +68,13 @@ def main():
             if 'import' not in line:
                 model_tools += line
         model_tools = f"{model_tools.strip()}\n" + "\n\n"
+
+    with open("../transforms.py", "r") as f:
+        transform_tools = ""
+        for line in f.readlines():
+            if 'import' not in line:
+                transform_tools += line
+        transform_tools = f"{transform_tools.strip()}\n" + "\n\n"
         
         
     train_detector_func = dedent(
@@ -73,12 +91,20 @@ def main():
             train_img_dir = pathlib.Path(train_img_dir)
             dataset_params = learning_process["dataset_params"]
             train_fraction = dataset_params["train_fraction"]
+            if dataset_params["augmentation"] is None:
+                transforms = None
+            else:
+                transforms = [
+                    globals()[dict_["transform_type"]](**dict_["params"])
+                        for dict_ in dataset_params["augmentation"]
+                ]
             train_dataset = ImagePointsDataset(
                 mode="train",
                 train_fraction=train_fraction,
                 data_dir=train_img_dir,
                 train_gt=train_gt,
-                new_size=dataset_params["new_size"]
+                new_size=dataset_params["new_size"],
+                transforms=transforms
             )
             val_dataset = ImagePointsDataset(
                 mode="val",
@@ -95,8 +121,8 @@ def main():
             val_dataloader = DataLoader(
                 dataset=val_dataset,
                 batch_size = dataset_params["val_batch_size"],
-                shuffle=False
-            )    
+                shuffle=True
+            )
 
             # Init loss, optimizer, network.
             loss_params = learning_process["hyper_params"]["loss"]
@@ -110,7 +136,6 @@ def main():
                 **optimizer_params["params"]
             )
             optimizer.zero_grad()
-
             best_val_loss = float("inf")
 
             # Train and validate network.
@@ -219,11 +244,13 @@ def main():
 
     with open("./detection.py", "w") as f:
         f.write(
-            libs + 
-            consts + 
-            dataset_tools + 
-            model_tools + 
-            train_detector_func + 
+            libs +
+            consts +
+            base_dataset_tools +
+            dataset_tools +
+            model_tools +
+            transform_tools +
+            train_detector_func +
             detect_func
         )
      

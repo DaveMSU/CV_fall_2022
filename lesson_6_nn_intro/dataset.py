@@ -20,7 +20,7 @@ class ImagePointsDataset(BaseImageDataset):
         img_path = pair["path"]
         target = pair["target"].copy()
 
-        ## Load image.
+        # Load image.
         image = Image.open(img_path).convert('RGB')
         if self._transforms:
             for transform in self._transforms:
@@ -48,6 +48,7 @@ def convert_targets_shape(
         target: np.ndarray,
         shape: tp.Union[tp.Tuple[int, int], np.ndarray]
 ) -> np.ndarray:
+    target = target.copy()
     if isinstance(shape, tuple):
         target[::2] = target[::2] * shape[0]
         target[1::2] = target[1::2] * shape[1]
@@ -63,8 +64,8 @@ def show_face(
 ):
     img_arr, target, shape = ds[index]
     img_arr = img_arr.numpy().transpose(1, 2, 0)
-    target = convert_targets_shape(target, ds.shape)
     target = target.numpy()
+    target = convert_targets_shape(target, ds.shape)
     xs = target[::2]
     ys = target[1::2]
     plt.imshow(img_arr)
