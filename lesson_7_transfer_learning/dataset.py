@@ -29,7 +29,7 @@ class ImageClassifyDataset(BaseImageDataset):
     ) -> tp.Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         pair = self._items[index]
         img_path = pair["path"]
-        target = pair["target"].copy()
+        target = np.array(pair["target"])  # np.array(int)
 
         ## Load image.
         image = Image.open(img_path).convert('RGB')
@@ -52,7 +52,8 @@ class ImageClassifyDataset(BaseImageDataset):
 
         # Do one hot encoding of the target.
         blank_line = np.zeros(self._classes_num, dtype=np.float32)
-        blank_line[int(target)] = 1.0
+        if self._mode != "test":
+            blank_line[int(target)] = 1.0
         target = torch.from_numpy(blank_line.copy())
         
         return image, target, torch.Tensor(orig_shape)

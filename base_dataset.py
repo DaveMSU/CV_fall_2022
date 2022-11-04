@@ -1,3 +1,4 @@
+import copy
 import pathlib
 import typing as tp
 
@@ -12,17 +13,17 @@ class BaseImageDataset(torch.utils.data.Dataset):
             mode: str,
             train_fraction: float,
             data_dir: pathlib.PosixPath,
-            train_gt: tp.Dict[str, np.ndarray],
+            train_gt: tp.Dict[str, tp.Union[np.ndarray, int]],
             new_size: tp.Tuple[int, int] = (64, 64),
             transforms: tp.Union[
-                tp.Optional[tp.List[tp.Callable],
+                tp.Optional[tp.List[tp.Callable]],
                 torch.nn.Sequential
             ] = None
     ):
         self._items = [
             {
                 "path": data_dir/file_name,
-                "target": target
+                "target": copy.deepcopy(target)
             }
             for file_name, target in train_gt.items()
         ]
