@@ -207,7 +207,7 @@ def main():
                 base_net = models.resnet18(pretrained=False),
                 first_layers_number_to_be_frozen = 9
             )
-            checkpoint = torch.load("./birds_model.ckpt")
+            checkpoint = torch.load(model_filename)
             net.load_state_dict(checkpoint['model_state_dict'])
 
             # Create dataloader.
