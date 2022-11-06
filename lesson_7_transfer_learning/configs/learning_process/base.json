@@ -12,9 +12,9 @@
             "params": {}
         },
         "optimizer": {
-            "optimizer_type": "Adam",
+            "optimizer_type": "SGD",
             "params": {
-                "lr": 0.0003
+                "lr": 0.01
             }
         },
         "epoch_nums": 200
