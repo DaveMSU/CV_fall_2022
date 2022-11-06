@@ -4,22 +4,7 @@
         "new_size": [64, 64],
         "train_batch_size": 512,
         "val_batch_size": 100,
-        "augmentation": [
-            {
-                "transform_type": "FacePointsRandomHorizontalFlipTransform",
-                "params": {
-                    "p": 0.5
-                }
-            },
-            {
-                "transform_type": "FacePointsRandomCropTransform",
-                "params": {
-                    "crop_sizes": [0.85, 0.85],
-                    "p": 0.35,
-                    "skip": true
-                }
-            }
-        ]
+        "augmentation": null
     },
     "hyper_params": {
         "loss": {

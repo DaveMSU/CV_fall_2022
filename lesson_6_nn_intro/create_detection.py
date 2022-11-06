@@ -201,7 +201,7 @@ def main():
 
             # Load network.
             net = NeuralNetwork(net_arch)
-            checkpoint = torch.load("./facepoints_model.ckpt")
+            checkpoint = torch.load(model_filename)
             net.load_state_dict(checkpoint['model_state_dict'])
 
             # Create dataloader.
