@@ -1,7 +1,7 @@
 {
     "logger": {
         "logger_name": "DebugLogger",
-        "logging_file": "/home/david_tyuman/my_github/cv_fall_2022/lesson_6_nn_intro/experiments/baseline/stdout.log",
+        "logging_file": "/home/david_tyuman/my_github/cv_fall_2022/lesson_6_nn_intro/experiments/sgd_10/stdout.log",
         "stdout": true
     },
     "data": {
@@ -23,14 +23,14 @@
             "params": {}
         },
         "optimizer": {
-            "optimizer_type": "Adam",
+            "optimizer_type": "SGD",
             "params": {
-                "lr": 0.0003
+                "lr": 1.0
             }
         },
         "epoch_nums": 2000
     },
     "device": "cuda:0",
-    "tensorboard_logs": "/home/david_tyuman/my_github/cv_fall_2022/lesson_6_nn_intro/experiments/baseline/runs",
-    "model_dump": "/home/david_tyuman/my_github/cv_fall_2022/lesson_6_nn_intro/experiments/baseline/2000_epochs.Adam_0003.MSE.no_dropout.no_aug.no_batchnorm.ckpt"
+    "tensorboard_logs": "/home/david_tyuman/my_github/cv_fall_2022/lesson_6_nn_intro/experiments/sgd_10/runs",
+    "model_dump": "/home/david_tyuman/my_github/cv_fall_2022/lesson_6_nn_intro/experiments/sgd_10/2000_epochs.SGD_10.MSE.no_dropout.no_aug.no_batchnorm.ckpt"
 }
