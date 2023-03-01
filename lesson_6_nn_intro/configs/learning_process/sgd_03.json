@@ -1,17 +1,17 @@
 {
     "logger": {
         "logger_name": "DebugLogger",
-        "logging_file": "/home/david_tyuman/my_github/cv_fall_2022/lesson_6_nn_intro/experiments/sgd_03/stdout.log",
+        "logging_file": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/sgd_03/stdout.log",
         "stdout": true
     },
     "data": {
         "train": {
-            "dump_path": "/home/david_tyuman/my_github/cv_fall_2022/lesson_6_nn_intro/pools/train_pool.base",
+            "dump_path": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/pools/train_pool.base",
             "batch_size": 512,
             "shuffle": true
         },
         "val": {
-            "dump_path": "/home/david_tyuman/my_github/cv_fall_2022/lesson_6_nn_intro/pools/val_pool.base",
+            "dump_path": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/pools/val_pool.base",
             "batch_size": 100,
             "shuffle": true
         }
@@ -31,6 +31,6 @@
         "epoch_nums": 2000
     },
     "device": "cuda:0",
-    "tensorboard_logs": "/home/david_tyuman/my_github/cv_fall_2022/lesson_6_nn_intro/experiments/sgd_03/runs",
-    "model_dump": "/home/david_tyuman/my_github/cv_fall_2022/lesson_6_nn_intro/experiments/sgd_03/2000_epochs.SGD_03.MSE.no_dropout.no_aug.no_batchnorm.ckpt"
+    "tensorboard_logs": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/sgd_03/tensorboard_runs",
+    "model_dump": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/sgd_03/2000_epochs.SGD_03.MSE.no_dropout.no_aug.no_batchnorm.ckpt"
 }
