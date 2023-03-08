@@ -1,0 +1,36 @@
+{
+    "logger": {
+        "logger_name": "DebugLogger",
+        "logging_file": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/sgd_70/stdout.log",
+        "stdout": true
+    },
+    "data": {
+        "train": {
+            "dump_path": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/pools/train_pool.base",
+            "batch_size": 512,
+            "shuffle": true
+        },
+        "val": {
+            "dump_path": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/pools/val_pool.base",
+            "batch_size": 100,
+            "shuffle": true
+        }
+    },
+    "start_model": null,
+    "hyper_params": {
+        "loss": {
+            "loss_type": "MSELoss",
+            "params": {}
+        },
+        "optimizer": {
+            "optimizer_type": "SGD",
+            "params": {
+                "lr": 7.0
+            }
+        },
+        "epoch_nums": 2000
+    },
+    "device": "cuda:0",
+    "tensorboard_logs": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/sgd_70/tensorboard_runs",
+    "model_dump": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/sgd_70/2000_epochs.SGD_70.MSE.no_dropout.no_aug.no_batchnorm.ckpt"
+}
