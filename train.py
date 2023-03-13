@@ -42,25 +42,6 @@ def main():
         )
 
     # configation of learning process.
-    loss_params = learning_process["hyper_params"]["loss"]
-    optimizer_params = learning_process["hyper_params"]["optimizer"]
-    epoch_nums = learning_process["hyper_params"]["epoch_nums"]
-
-    net = NeuralNetwork(net_arch)
-    logger.debug("Model created successfully with no pretrain.")
-    if learning_process["start_model"]:
-        checkpoint = torch.load(learning_process["start_model"])
-        net.load_state_dict(checkpoint['model_state_dict'])
-        logger.debug("Pretrain init state loaded.")
-    loss = getattr(torch.nn, loss_params["loss_type"])(**loss_params["params"])
-    logger.debug(f"Loss `{loss_params['loss_type']}` created successfully.")
-    optimizer = getattr(torch.optim, optimizer_params["optimizer_type"])(
-        net.parameters(),
-        **optimizer_params["params"]
-    )
-    logger.debug(
-        f"Optimizer `{optimizer_params['optimizer_type']}` created successfully."
-    )
     device = torch.device(learning_process["device"])
     logger.debug(
         f"Device was selected successfully as `{learning_process['device']}`."
@@ -74,25 +55,52 @@ def main():
     logger.debug(f"{torch.cuda.get_device_name(0)=}")
     logger.debug(f"{torch.device('cuda')=}")
     logger.debug(f"{torch.device('cuda:0')=}")
+
+    loss_params = learning_process["hyper_params"]["loss"]
+    optimizer_params = learning_process["hyper_params"]["optimizer"]
+    epoch_nums = learning_process["hyper_params"]["epoch_nums"]
+
+    net = NeuralNetwork(net_arch)
+    logger.debug("Model created successfully with no pretrain.")
+    if learning_process["start_model"]:
+        checkpoint = torch.load(learning_process["start_model"])
+        net.load_state_dict(checkpoint['model_state_dict'])
+        logger.debug("Pretrain init state loaded.")
+    net = net.to(device)
+    logger.debug("Model transfered to device successfully.")
+    loss = getattr(torch.nn, loss_params["loss_type"])(**loss_params["params"])
+    logger.debug(f"Loss `{loss_params['loss_type']}` created successfully.")
+    optimizer = getattr(torch.optim, optimizer_params["optimizer_type"])(
+        net.parameters(),
+        **optimizer_params["params"]
+    )
+    logger.debug(
+        f"Optimizer `{optimizer_params['optimizer_type']}` created successfully."
+    )
     writer = SummaryWriter(learning_process["tensorboard_logs"])
     logger.debug("SummaryWriter created successfully.")
     best_val_loss, best_epoch = float("inf"), 0
 
     # training itself.
-    net = net.to(device)
-    logger.debug("Model transfered to device successfully.")
     for epoch in range(epoch_nums):
         logger.info(f"Epoch №{epoch} has started.")
         net.train()
         logger.debug("Model set to train mode.")
         loss_history = []
         for X, y, *_ in dataloaders["train"]:
+            logger.debug("All data erased from dataloaders['train'].")
             X, y = X.to(device), y.to(device)
+            logger.debug("X, y tensors transported to device.")
             optimizer.zero_grad()
+            logger.debug("Gradient cleared by optimizer.")
             y_pred = net(X)
+            logger.debug("Network infered and returned prediction.")
             loss_value = loss(y_pred, y)
+            logger.debug("Loss value counted.")
             loss_value.backward()
+            logger.debug("Backward pass done.")
             optimizer.step()
+            logger.debug("Optimizer has done a step.")
             cur_train_loss = loss_value.cpu().data.item()
             loss_history.append(cur_train_loss)
             logger.info(f"another train batch loss: %f" % cur_train_loss)
@@ -105,9 +113,13 @@ def main():
         loss_history = []
         with torch.no_grad():
             for X, y, *_ in dataloaders["val"]:
+                logger.debug("All data erased from dataloaders['val'].")
                 X, y = X.to(device), y.to(device)
+                logger.debug("X, y tensors transported to device.")
                 y_pred = net(X)
+                logger.debug("Network infered and returned prediction.")
                 loss_value = loss(y_pred, y) 
+                logger.debug("Loss value counted.")
                 loss_history.append(loss_value.cpu().data.item())
 
         val_loss = np.mean(loss_history)
@@ -134,7 +146,7 @@ def main():
                 },
                 pathlib.Path(learning_process["model_dump"])
             )
-            logger.debug("New best dump has been achived!")
+            logger.info("New best dump has been achived!")
 
     logger.debug("Training completed.")
     logger.info(
