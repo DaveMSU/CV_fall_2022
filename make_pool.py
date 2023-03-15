@@ -36,35 +36,27 @@ def main():
         config = json.load(f)
     
     # train/val data preparing.
-    train_img_dir = pathlib.Path(config["train_data_dir"])
-    train_gt: tp.Dict[str, np.ndarray] = _read_csv(config["labels"])
-    dataset_params = config["dataset_params"]
-    train_fraction = dataset_params["train_fraction"]
-    if dataset_params["augmentation"] is None:
-        transforms = None
-    else:
-        transforms = [
-            globals()[dict_["transform_type"]](**dict_["params"])
-                for dict_ in dataset_params["augmentation"]
-        ]
+    for pool_config in config["pools"]:
+        if pool_config["dataset_params"]["augmentation"] is None:
+            transforms = None
+        else:
+            transforms = [
+                globals()[dict_["transform_type"]](**dict_["params"])
+                    for dict_ in pool_config["dataset_params"]["augmentation"]
+            ]
 
-    datasets = {
-        mode: getattr(lib.datasets, config["dataset_type"])(
-            mode=mode,
-            train_fraction=train_fraction,
-            data_dir=train_img_dir,
-            train_gt=train_gt,
-            new_size=dataset_params["new_size"],
+        dataset = getattr(lib.datasets, pool_config["dataset_type"])(
+            mode=pool_config["mode"],
+            train_fraction=pool_config["dataset_params"]["train_fraction"],
+            data_dir=pathlib.Path(config["train_data_dir"]),
+            train_gt=_read_csv(config["labels"]),
+            new_size=pool_config["dataset_params"]["new_size"],
             transforms=transforms
-        ) for mode in ["train", "val"]
-    }
+        )
 
-    # dumping dataset somewhere.
-    with open(config["train_dump_path"], 'wb') as f:
-        pickle.dump(datasets["train"], f)
-    
-    with open(config["val_dump_path"], 'wb') as f:
-        pickle.dump(datasets["val"], f)
+        # dumping dataset somewhere.
+        with open(pool_config["dump_path"], 'wb') as f:
+            pickle.dump(dataset, f)
 
 
 if __name__ == "__main__":
