@@ -36,7 +36,6 @@ def main():
         config = json.load(f)
     
     # train/val data preparing.
-    train_img_dir = pathlib.Path(config["train_data_dir"])
     for pool_config in config["pools"]:
         if pool_config["dataset_params"]["augmentation"] is None:
             transforms = None
