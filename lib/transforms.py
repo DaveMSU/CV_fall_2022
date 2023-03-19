@@ -1,7 +1,12 @@
 import typing as tp
+import warnings
 
 import numpy as np
 from PIL import Image
+
+
+# TODO: Handle such logger behaviour that maintains 'always'.
+warnings.simplefilter('ignore')  
 
 
 class FacePointsRandomCropTransform:
@@ -58,6 +63,7 @@ class FacePointsRandomCropTransform:
             )
             
             if self._skip:
+                warnings.warn("Cropping skiped.", category=Warning)
                 if good_condition:
                     image = croped_image
                     points = croped_points
