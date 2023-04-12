@@ -42,19 +42,20 @@ def main():
         )
 
     # configation of learning process.
-    device = torch.device(learning_process["device"])
+    device_identifier: str = learning_process["device"]
+    device = torch.device(device_identifier)
     logger.debug(
-        f"Device was selected successfully as `{learning_process['device']}`."
+        f'"{device_identifier}" device was selected successfully!'
     )
     logger.debug(f"{torch.__version__=}")
     logger.debug(f"{torch.version.cuda=}")
     logger.debug(f"{torch.cuda.is_available()=}")
     logger.debug(f"{torch.cuda.device_count()=}")
     logger.debug(f"{torch.cuda.current_device()=}")
-    logger.debug(f"{torch.cuda.device(0)=}")
-    logger.debug(f"{torch.cuda.get_device_name(0)=}")
-    logger.debug(f"{torch.device('cuda')=}")
-    logger.debug(f"{torch.device('cuda:0')=}")
+    logger.debug(f"{device_identifier=}")
+    logger.debug(f"{torch.cuda.get_device_name(device_identifier)=}")
+    logger.debug(f"{torch.device(device_identifier)=}")
+    logger.debug(f"{torch.cuda.get_device_properties(device)}")
 
     loss_params = learning_process["hyper_params"]["loss"]
     optimizer_params = learning_process["hyper_params"]["optimizer"]
