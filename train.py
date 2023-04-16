@@ -27,7 +27,11 @@ def main():
     
     logger = make_logger(**learning_process["logger"])
     logger.debug("Logger created.")
-
+    if logging_file := learning_process["logger"]["logging_file"]:
+        logger.debug(
+            f"stdout is duplicated to file '{logging_file}' as well."
+        )
+    
     # train/val dataloaders loading.
     dataloaders = dict()
     for mode in ["train", "val"]:
@@ -53,9 +57,10 @@ def main():
     logger.debug(f"{torch.cuda.device_count()=}")
     logger.debug(f"{torch.cuda.current_device()=}")
     logger.debug(f"{device_identifier=}")
-    logger.debug(f"{torch.cuda.get_device_name(device_identifier)=}")
     logger.debug(f"{torch.device(device_identifier)=}")
-    logger.debug(f"{torch.cuda.get_device_properties(device)}")
+    if device.type == "cuda":
+        logger.debug(f"{torch.cuda.get_device_name(device_identifier)=}")
+        logger.debug(f"{torch.cuda.get_device_properties(device)}")
 
     loss_params = learning_process["hyper_params"]["loss"]
     optimizer_params = learning_process["hyper_params"]["optimizer"]
@@ -81,6 +86,7 @@ def main():
     writer = SummaryWriter(learning_process["tensorboard_logs"])
     logger.debug("SummaryWriter created successfully.")
     best_val_loss, best_epoch = float("inf"), 0
+    train_loss_in_the_best_epoch = float("inf")
 
     # training itself.
     for epoch in range(epoch_nums):
@@ -139,6 +145,7 @@ def main():
         
         if val_loss < best_val_loss:
             best_val_loss = val_loss
+            train_loss_in_the_best_epoch = train_loss
             best_epoch = epoch
             torch.save(
                 {
@@ -151,13 +158,13 @@ def main():
 
     logger.debug("Training completed.")
     logger.info(
-        f"Best val loss ({best_val_loss}) was achived at the end of"\
-        f" {best_epoch}'th epoch (by counting from zero)."
+        f"Best val loss ({best_val_loss}) was achived at the end of"
+        f" {best_epoch}'th epoch (by counting from zero) (the"
+        f" corresponding train loss is {train_loss_in_the_best_epoch})."
     )
     writer.close()
     logger.debug("Writer closed.")
     
-
 
 if __name__ == "__main__":
     main()
