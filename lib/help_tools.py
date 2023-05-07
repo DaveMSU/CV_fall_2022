@@ -44,11 +44,9 @@ def make_logger(
             "There are no logging handlers, but"
             " there must be at least one handler."
         )
-
     for h in handlers:
         h.setLevel(logging.DEBUG)
         h.setFormatter(formatter)
         logger.addHandler(h)
-
     return logger
 
