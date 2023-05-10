@@ -1,6 +1,7 @@
 import json
 import pathlib
 import pickle
+from collections import defaultdict
 
 import numpy as np
 import sklearn.metrics
@@ -130,15 +131,22 @@ def main():
         logger.info(f"Epoch №{epoch} has started.")
         net.train()
         logger.debug("Model set to train mode.")
-        loss_history = []
+        loss_history: tp.List[float] = []
+        grads: tp.Dict[str, tp.List[tp.List[float]]] = defaultdict(list)
         for X, y, *_ in dataloaders["train"]:
-            logger.debug("Data have been erased from dataloaders['train'].")
+            logger.debug(
+                "Data have been erased from dataloaders['train'] with shapes:"
+                f" `X` ~ {tuple(X.shape)}, `y` ~ {tuple(y.shape)}."
+            )
             X, y = X.to(device), y.to(device)
             logger.debug("X, y tensors have been transported to device.")
             optimizer.zero_grad()
             logger.debug("Gradient has been cleared by the optimizer.")
             y_pred = net(X)
-            logger.debug("Network has infered and returned prediction.")
+            logger.debug(
+                "Network has infered and returned prediction with shape:"
+                f" `y_pred` ~ {tuple(y_pred.shape)}"
+            )
             loss_value = loss(y_pred, y)
             logger.debug("Loss value has been calculated.")
             loss_value.backward()
@@ -148,6 +156,26 @@ def main():
             cur_train_loss = loss_value.cpu().data.item()
             loss_history.append(cur_train_loss)
             logger.info("another train batch loss: %f" % cur_train_loss)
+            for sub_net_name, sub_net in net.named_children():
+                gradient = []
+                for param in sub_net.parameters():
+                    grad_: tp.Optional[torch.Tensor] = param.grad
+                    if grad_ is not None:
+                        gradient.extend(
+                            grad_.cpu().numpy().reshape(-1).tolist()
+                        )
+                grads[sub_net_name].append(gradient)
+            logger.debug("Batch grad for each parameter has been saved.")
+
+        mean_grads = {
+            sub_net_name: np.array(grad_for_each_batch).mean(axis=0)
+            for sub_net_name, grad_for_each_batch in grads.items()
+        }
+        grad_norms: tp.Dict[str, float] = {
+            sub_net_name: np.power(mean_grad, 2).sum() ** 0.5
+            for sub_net_name, mean_grad in mean_grads.items()
+        }
+        logger.debug("All grad norms has been calculated.")
 
         train_loss = np.mean(loss_history)
         logger.info("train loss: %f" % train_loss)
@@ -159,11 +187,17 @@ def main():
         y_pred_history: tp.List[tp.List[float]] = []
         with torch.no_grad():
             for X, y, *_ in dataloaders["val"]:
-                logger.debug("Data have been erased from dataloaders['val'].")
+                logger.debug(
+                    "Data have been erased from dataloaders['val'] with shapes:"
+                    f" `X` ~ {tuple(X.shape)}, `y`~{tuple(y.shape)}."
+                )
                 X, y = X.to(device), y.to(device)
                 logger.debug("X, y tensors have been transported to device.")
                 y_pred = net(X)
-                logger.debug("Network has infered and returned prediction.")
+                logger.debug(
+                    "Network has infered and returned prediction with shape:"
+                    f" `y_pred` ~ {tuple(y_pred.shape)}"
+                )
                 loss_value = loss(y_pred, y)
                 logger.debug("Loss value has been calculated.")
                 loss_history.append(loss_value.cpu().data.item())
@@ -179,7 +213,7 @@ def main():
         for name, metric_handler in metrics.items():
             calculated_metrics[name] = metric_handler(
                 y_true_history,
-                y_pred_history
+                y_pred_history  # TODO: handle apply function.
             )
             logger.info(
                 f"`{name}` value at val:  %f" % calculated_metrics[name]
@@ -195,6 +229,7 @@ def main():
             epoch
         )
         writer.add_scalars("Metrics", calculated_metrics, epoch)
+        writer.add_scalars("GradNorms", grad_norms, epoch)
         logger.debug("Writer have added new scalars.")
 
         if metrics[main_metric_name].is_it_better_than(best_main_metric_value):

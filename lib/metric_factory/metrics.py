@@ -33,8 +33,8 @@ class _sklearn_metric_handler:
 class _discrete(_sklearn_metric_handler):
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         assert y_true.shape == y_pred.shape
-        assert len(y_true.shape) in {1, 2}
-        if len(y_true.shape) == 2:
+        assert y_true.ndim in {1, 2}
+        if y_true.ndim == 2:
             y_true = y_true.argmax(axis=1)
             y_pred = y_pred.argmax(axis=1)
         self._contained_value = self._metric(y_true, y_pred, **self._params)
@@ -43,7 +43,7 @@ class _discrete(_sklearn_metric_handler):
 
 class _continuous(_sklearn_metric_handler):
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        assert len(y_true.shape) in {1, 2}
+        assert y_true.ndim in {1, 2}
         self._contained_value = self._metric(y_true, y_pred, **self._params)
         return self._contained_value
 
@@ -52,8 +52,12 @@ class MetricFactory:
     @staticmethod
     def create_metric(metric_type: str, params: dict):
         assert metric_type in {
-            "accuracy_score", "f1_score", "precision_score",
-            "recall_score", "roc_auc_score", "log_loss"
+            "accuracy_score",
+            "f1_score",
+            "precision_score",
+            "recall_score",
+            # "roc_auc_score",  # TODO: support applying map function to
+            # "log_loss"  # TODO:  ... prediction before passing in metric.
         }
         if metric_type not in {"roc_auc_score", "log_loss"}:
             return _discrete(metric_type=metric_type, params=params)
