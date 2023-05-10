@@ -20,10 +20,10 @@ def main():
     net_arch_path = pathlib.Path(args.net)
     learning_process_path = pathlib.Path(args.learn)
 
-    with open(net_arch_path) as f:
+    with open(net_arch_path, "r") as f:
         net_arch = json.load(f)
 
-    with open(learning_process_path) as f:
+    with open(learning_process_path, "r") as f:
         learning_process = json.load(f)
 
     logger = make_logger(**learning_process["logger"])
