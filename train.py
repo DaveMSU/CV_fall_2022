@@ -132,7 +132,9 @@ def main():
         net.train()
         logger.debug("Model set to train mode.")
         loss_history: tp.List[float] = []
-        grads: tp.Dict[str, tp.List[tp.List[float]]] = defaultdict(list)
+        mean_grads: tp.Dict[str, tp.Union[np.ndarray, int]] = {
+            "gradients_accumulated_number": 0
+        }
         for X, y, *_ in dataloaders["train"]:
             logger.debug(
                 "Data have been erased from dataloaders['train'] with shapes:"
@@ -156,7 +158,7 @@ def main():
             cur_train_loss = loss_value.cpu().data.item()
             loss_history.append(cur_train_loss)
             logger.info("another train batch loss: %f" % cur_train_loss)
-            for sub_net_name, sub_net in net.named_children():
+            for sub_net_name, sub_net in net.named_children():  # TODO: optimize RAM usage.
                 gradient = []
                 for param in sub_net.parameters():
                     grad_: tp.Optional[torch.Tensor] = param.grad
@@ -164,16 +166,22 @@ def main():
                         gradient.extend(
                             grad_.cpu().numpy().reshape(-1).tolist()
                         )
-                grads[sub_net_name].append(gradient)
-            logger.debug("Batch grad for each parameter has been saved.")
+                if sub_net_name in mean_grads:
+                    cnt = mean_grads["gradients_accumulated_number"]
+                    old_sum = mean_grads[sub_net_name] * cnt
+                    new_sum = old_sum + np.array(gradient)
+                    mean_grads[sub_net_name] = new_sum / (cnt + 1)
+                else:
+                    mean_grads[sub_net_name] = np.array(gradient).mean(axis=0)
+                mean_grads["gradients_accumulated_number"] += 1
+            logger.debug("Averaged grad for each parameter has been saved.")
 
-        mean_grads = {
-            sub_net_name: np.array(grad_for_each_batch).mean(axis=0)
-            for sub_net_name, grad_for_each_batch in grads.items()
-        }
         grad_norms: tp.Dict[str, float] = {
-            sub_net_name: np.power(mean_grad, 2).sum() ** 0.5
-            for sub_net_name, mean_grad in mean_grads.items()
+            sub_net_name: np.power(mean_grads[sub_net_name], 2).sum() ** 0.5
+            for sub_net_name in filter(
+                lambda key: key != "gradients_accumulated_number",
+                mean_grads
+            )
         }
         logger.debug("All grad norms has been calculated.")
 
