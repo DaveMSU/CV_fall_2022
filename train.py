@@ -168,9 +168,8 @@ def main():
                         )
                 if sub_net_name in mean_grads:
                     cnt = mean_grads["gradients_accumulated_number"]
-                    old_sum = mean_grads[sub_net_name] * cnt
-                    new_sum = old_sum + np.array(gradient)
-                    mean_grads[sub_net_name] = new_sum / (cnt + 1)
+                    correcting_term = (np.array(gradient) - mean_grads[sub_net_name])  / (cnt + 1)
+                    mean_grads[sub_net_name] = mean_grads[sub_net_name] + correcting_term
                 else:
                     mean_grads[sub_net_name] = np.array(gradient).mean(axis=0)
                 mean_grads["gradients_accumulated_number"] += 1
