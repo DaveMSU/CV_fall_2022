@@ -158,7 +158,7 @@ def main():
             cur_train_loss = loss_value.cpu().data.item()
             loss_history.append(cur_train_loss)
             logger.info("another train batch loss: %f" % cur_train_loss)
-            for sub_net_name, sub_net in net.named_children():  # TODO: optimize RAM usage.
+            for sub_net_name, sub_net in net.named_children():  # TODO: RAM memory bottle neck.
                 gradient = []
                 for param in sub_net.parameters():
                     grad_: tp.Optional[torch.Tensor] = param.grad
@@ -166,12 +166,13 @@ def main():
                         gradient.extend(
                             grad_.cpu().numpy().reshape(-1).tolist()
                         )
+                gradient = np.array(gradient)
                 if sub_net_name in mean_grads:
                     cnt = mean_grads["gradients_accumulated_number"]
-                    correcting_term = (np.array(gradient) - mean_grads[sub_net_name])  / (cnt + 1)
-                    mean_grads[sub_net_name] = mean_grads[sub_net_name] + correcting_term
+                    term = (gradient - mean_grads[sub_net_name]) / (cnt + 1)
+                    mean_grads[sub_net_name] += term
                 else:
-                    mean_grads[sub_net_name] = np.array(gradient).mean(axis=0)
+                    mean_grads[sub_net_name] = gradient
                 mean_grads["gradients_accumulated_number"] += 1
             logger.debug("Averaged grad for each parameter has been saved.")
 
