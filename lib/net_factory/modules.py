@@ -79,20 +79,40 @@ class BasicBlock(_BaseNetModule):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         identity = x
-
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
-
         if self.downsample is not None:
             identity = self.downsample(x)
-
         out += identity
         out = self.relu(out)
+        return out
 
+
+class Bottleneck(_BaseNetModule):
+    def __init__(self, *args, **kwargs):
+        self.downsample: tp.Optional[torch.nn.Module] = None
+        super().__init__(*args, **kwargs)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        identity = x
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+        if self.downsample is not None:
+            identity = self.downsample(x)
+        out += identity
+        out = self.relu(out)
         return out
 
 
