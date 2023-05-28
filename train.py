@@ -80,7 +80,7 @@ def main():
         epoch_start = checkpoint["epoch"] + 1
         logger.debug(
             "Checkpoint"
-            f" `{learning_process['continue_from']['checkpoint_path']}`"
+            f" `{learning_process['continue_from']}`"
             " have been successfully loaded!"
         )
     else:
