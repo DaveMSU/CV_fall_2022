@@ -9,6 +9,37 @@ from PIL import Image
 warnings.simplefilter('ignore')  
 
 
+class NoTargetEffectRandomCropTransform:
+    def __init__(
+            self,
+            crop_sizes: tp.Tuple[float, float] = (1.0, 1.0),
+            p: float = 0.5
+    ):
+        assert (0.0 <= crop_sizes[0] <= 1.0) and (0.0 <= crop_sizes[1] <= 1.0), \
+            "Crop sizes if relative, so each of them must be between 0.0 and 1.0"
+        assert 0.0 <= p <= 1.0, "Probability must be between 0.0 and 1.0"
+        self._crop_sizes = crop_sizes
+        self._p = p
+
+    def __call__(self, image: Image.Image) -> Image.Image:
+        if (np.random.rand() < self._p) and (
+                (self._crop_sizes[0] < 1.0) or (self._crop_sizes[1] < 1.0)
+        ):
+            new_height = round(self._crop_sizes[0] * image.height)
+            new_width = round(self._crop_sizes[1] * image.width)
+            left_image_border = np.random.randint(0, image.width - new_width)
+            down_image_border = np.random.randint(0, image.height - new_height)
+            croped_image = image.crop(
+                (
+                    left_image_border,
+                    down_image_border,
+                    left_image_border + new_width,
+                    down_image_border + new_height
+                )
+            )
+        return image
+
+
 class FacePointsRandomCropTransform:
     def __init__(
             self,
