@@ -12,7 +12,6 @@ from .base_dataset import BaseImageDataset
 class ImageClassifyDataset(BaseImageDataset):
     def __init__(self, classes_num: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        assert self._transforms is None, "Transforms haven't supported yet."
         self._classes_num = classes_num
 
     @property
@@ -31,7 +30,7 @@ class ImageClassifyDataset(BaseImageDataset):
         image = Image.open(img_path).convert('RGB')
         if self._transforms:
             for transform in self._transforms:
-                image, target = transform(image, target)
+                image = transform(image)
         image = np.array(image).astype(np.float32) / 255.
 
         # Change shapes.
