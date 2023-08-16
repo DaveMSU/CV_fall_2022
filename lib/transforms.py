@@ -21,7 +21,7 @@ class NoTargetEffectRandomCropTransform:
         self._crop_sizes = crop_sizes
         self._p = p
 
-    def __call__(self, image: Image.Image) -> Image.Image:
+    def __call__(self, image: Image.Image) -> Image.Image:  # TODO: add logging.
         if (np.random.rand() < self._p) and (
                 (self._crop_sizes[0] < 1.0) or (self._crop_sizes[1] < 1.0)
         ):
@@ -29,7 +29,7 @@ class NoTargetEffectRandomCropTransform:
             new_width = round(self._crop_sizes[1] * image.width)
             left_image_border = np.random.randint(0, image.width - new_width)
             down_image_border = np.random.randint(0, image.height - new_height)
-            croped_image = image.crop(
+            image = image.crop(
                 (
                     left_image_border,
                     down_image_border,
