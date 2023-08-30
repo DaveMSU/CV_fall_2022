@@ -197,7 +197,7 @@ def main():
             for X, y, *_ in dataloaders["val"]:
                 logger.debug(
                     "Data have been erased from dataloaders['val'] with shapes:"
-                    f" `X` ~ {tuple(X.shape)}, `y`~{tuple(y.shape)}."
+                    f" `X` ~ {tuple(X.shape)}, `y` ~ {tuple(y.shape)}."
                 )
                 X, y = X.to(device), y.to(device)
                 logger.debug("X, y tensors have been transported to device.")
