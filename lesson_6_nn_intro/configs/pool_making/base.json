@@ -1,0 +1,12 @@
+{
+    "train_data_dir": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/00_test_img_input/train/images",
+    "labels": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/00_test_img_input/train/gt.csv",
+    "dataset_type": "ImagePointsDataset",
+    "dataset_params": {
+        "train_fraction": 0.9,
+        "new_size": [64, 64],
+        "augmentation": null
+    },
+    "train_dump_path": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/pools/train_pool.base",
+    "val_dump_path": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/pools/val_pool.base"
+}
