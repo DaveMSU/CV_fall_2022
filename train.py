@@ -65,6 +65,11 @@ def main():
 
     loss_params: dict = learning_process["hyper_params"]["loss"]
     optimizer_params: dict = learning_process["hyper_params"]["optimizer"]
+    lr_scheduler_params: dict = learning_process["hyper_params"]["lr_scheduler"]
+    if "lr_lambda" in lr_scheduler_params["params"]:
+        lr_scheduler_params["params"]["lr_lambda"] = eval(
+            lr_scheduler_params["params"]["lr_lambda"]
+        )
     epoch_nums: int = learning_process["hyper_params"]["epoch_nums"]
 
     # init model from pretrained state / continue unfinished learning.
@@ -98,6 +103,17 @@ def main():
     )
     logger.debug(
         f"Optimizer `{optimizer_params['optimizer_type']}`"
+        " has been created successfully."
+    )
+    lr_scheduler = getattr(  # TODO: support SequentialLR here.
+        torch.optim.lr_scheduler,
+        lr_scheduler_params["lr_scheduler_type"]
+    )(
+        optimizer,
+        **lr_scheduler_params["params"]
+    )
+    logger.debug(
+        f"Scheduler of lr `{lr_scheduler_params['lr_scheduler_type']}`"
         " has been created successfully."
     )
 
@@ -228,6 +244,19 @@ def main():
             )
         logger.debug("All metrics have been calculated!")
 
+        # TODO: incorrect when number of groups more than one.
+        prev_learning_rate: float = optimizer.param_groups[-1]["lr"]
+        if lr_scheduler_params["lr_scheduler_type"] == "ReduceLROnPlateau":
+            lr_scheduler.step(calculated_metrics[main_metric_name])
+        else:
+            lr_scheduler.step()
+        cur_learning_rate: float = optimizer.param_groups[-1]["lr"]
+        logger.debug("Step of lr_scheduler has been made.")
+        logger.info(
+            "Learning rate has changed from value"
+            f" `{prev_learning_rate}` to `{cur_learning_rate}`."
+        )
+
         writer.add_scalars(
             "Loss",
             {
@@ -238,6 +267,7 @@ def main():
         )
         writer.add_scalars("Metrics", calculated_metrics, epoch)
         writer.add_scalars("GradNorms", grad_norms, epoch)
+        writer.add_scalar("LearningRate", prev_learning_rate, epoch)
         logger.debug("Writer have added new scalars.")
 
         if metrics[main_metric_name].is_it_better_than(best_main_metric_value):
