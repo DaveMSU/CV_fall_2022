@@ -134,7 +134,7 @@ def main():
         for metric in learning_process["metrics"]
     }
     logger.debug(
-        "MetricFactory has created all metric handlers successfully!"
+        "MetricFactory has created all metric handlers successfully."
     )
 
     main_metric_name = learning_process["main_metric_name"]
