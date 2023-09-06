@@ -65,6 +65,12 @@ def main():
 
     loss_params: dict = learning_process["hyper_params"]["loss"]
     optimizer_params: dict = learning_process["hyper_params"]["optimizer"]
+    lr_scheduler_params: dict = learning_process["hyper_params"]["lr_scheduler"]
+    if "lr_lambda" in lr_scheduler_params["params"]:
+        lr_scheduler_params["params"]["lr_lambda"] = eval(
+            lr_scheduler_params["params"]["lr_lambda"]
+        )
+    assert lr_scheduler_params["use_after"] in ["step", "epoch"]
     epoch_nums: int = learning_process["hyper_params"]["epoch_nums"]
 
     # init model from pretrained state / continue unfinished learning.
@@ -100,6 +106,17 @@ def main():
         f"Optimizer `{optimizer_params['optimizer_type']}`"
         " has been created successfully."
     )
+    lr_scheduler = getattr(  # TODO: support SequentialLR here.
+        torch.optim.lr_scheduler,
+        lr_scheduler_params["lr_scheduler_type"]
+    )(
+        optimizer,
+        **lr_scheduler_params["params"]
+    )
+    logger.debug(
+        f"Scheduler of lr `{lr_scheduler_params['lr_scheduler_type']}`"
+        " has been created successfully."
+    )
 
     writer = SummaryWriter(learning_process["tensorboard_logs"])
     logger.debug("SummaryWriter has been created successfully.")
@@ -127,6 +144,7 @@ def main():
     val_loss_in_the_best_epoch = float("inf")
 
     # training itself.
+    step: int = 0
     for epoch in range(epoch_start, epoch_end, 1):
         logger.info(f"Epoch №{epoch} has started.")
         net.train()
@@ -175,6 +193,22 @@ def main():
                     mean_grads[sub_net_name] = gradient
                 mean_grads["gradients_accumulated_number"] += 1
             logger.debug("Averaged grad for each parameter has been saved.")
+
+            if lr_scheduler_params["use_after"] == "step":
+                # TODO: incorrect when number of groups more than one.
+                prev_learning_rate: float = optimizer.param_groups[-1]["lr"]
+                if lr_scheduler_params["lr_scheduler_type"] == "ReduceLROnPlateau":
+                    lr_scheduler.step(cur_train_loss)
+                else:
+                    lr_scheduler.step()
+                cur_learning_rate: float = optimizer.param_groups[-1]["lr"]
+                logger.debug("Step of lr_scheduler has been made.")
+                logger.info(
+                    "Learning rate has changed from value"
+                    f" `{prev_learning_rate}` to `{cur_learning_rate}`."
+                )
+                writer.add_scalar("LearningRate", prev_learning_rate, step)
+            step += 1
 
         grad_norms: tp.Dict[str, float] = {
             sub_net_name: np.power(mean_grads[sub_net_name], 2).sum() ** 0.5
@@ -227,6 +261,21 @@ def main():
                 f"`{name}` value at val:  %f" % calculated_metrics[name]
             )
         logger.debug("All metrics have been calculated!")
+
+        if lr_scheduler_params["use_after"] == "epoch":
+            # TODO: incorrect when number of groups more than one.
+            prev_learning_rate: float = optimizer.param_groups[-1]["lr"]
+            if lr_scheduler_params["lr_scheduler_type"] == "ReduceLROnPlateau":
+                lr_scheduler.step(calculated_metrics[main_metric_name])
+            else:
+                lr_scheduler.step()
+            cur_learning_rate: float = optimizer.param_groups[-1]["lr"]
+            logger.debug("Step of lr_scheduler has been made.")
+            logger.info(
+                "Learning rate has changed from value"
+                f" `{prev_learning_rate}` to `{cur_learning_rate}`."
+            )
+            writer.add_scalar("LearningRate", prev_learning_rate, epoch)
 
         writer.add_scalars(
             "Loss",
