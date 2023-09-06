@@ -70,6 +70,7 @@ def main():
         lr_scheduler_params["params"]["lr_lambda"] = eval(
             lr_scheduler_params["params"]["lr_lambda"]
         )
+    assert lr_scheduler_params["use_after"] in ["step", "epoch"]
     epoch_nums: int = learning_process["hyper_params"]["epoch_nums"]
 
     # init model from pretrained state / continue unfinished learning.
@@ -143,6 +144,7 @@ def main():
     val_loss_in_the_best_epoch = float("inf")
 
     # training itself.
+    step: int = 0
     for epoch in range(epoch_start, epoch_end, 1):
         logger.info(f"Epoch №{epoch} has started.")
         net.train()
@@ -191,6 +193,22 @@ def main():
                     mean_grads[sub_net_name] = gradient
                 mean_grads["gradients_accumulated_number"] += 1
             logger.debug("Averaged grad for each parameter has been saved.")
+
+            if lr_scheduler_params["use_after"] == "step":
+                # TODO: incorrect when number of groups more than one.
+                prev_learning_rate: float = optimizer.param_groups[-1]["lr"]
+                if lr_scheduler_params["lr_scheduler_type"] == "ReduceLROnPlateau":
+                    lr_scheduler.step(cur_train_loss)
+                else:
+                    lr_scheduler.step()
+                cur_learning_rate: float = optimizer.param_groups[-1]["lr"]
+                logger.debug("Step of lr_scheduler has been made.")
+                logger.info(
+                    "Learning rate has changed from value"
+                    f" `{prev_learning_rate}` to `{cur_learning_rate}`."
+                )
+                writer.add_scalar("LearningRate", prev_learning_rate, step)
+            step += 1
 
         grad_norms: tp.Dict[str, float] = {
             sub_net_name: np.power(mean_grads[sub_net_name], 2).sum() ** 0.5
@@ -244,18 +262,20 @@ def main():
             )
         logger.debug("All metrics have been calculated!")
 
-        # TODO: incorrect when number of groups more than one.
-        prev_learning_rate: float = optimizer.param_groups[-1]["lr"]
-        if lr_scheduler_params["lr_scheduler_type"] == "ReduceLROnPlateau":
-            lr_scheduler.step(calculated_metrics[main_metric_name])
-        else:
-            lr_scheduler.step()
-        cur_learning_rate: float = optimizer.param_groups[-1]["lr"]
-        logger.debug("Step of lr_scheduler has been made.")
-        logger.info(
-            "Learning rate has changed from value"
-            f" `{prev_learning_rate}` to `{cur_learning_rate}`."
-        )
+        if lr_scheduler_params["use_after"] == "epoch":
+            # TODO: incorrect when number of groups more than one.
+            prev_learning_rate: float = optimizer.param_groups[-1]["lr"]
+            if lr_scheduler_params["lr_scheduler_type"] == "ReduceLROnPlateau":
+                lr_scheduler.step(calculated_metrics[main_metric_name])
+            else:
+                lr_scheduler.step()
+            cur_learning_rate: float = optimizer.param_groups[-1]["lr"]
+            logger.debug("Step of lr_scheduler has been made.")
+            logger.info(
+                "Learning rate has changed from value"
+                f" `{prev_learning_rate}` to `{cur_learning_rate}`."
+            )
+            writer.add_scalar("LearningRate", prev_learning_rate, epoch)
 
         writer.add_scalars(
             "Loss",
@@ -267,7 +287,6 @@ def main():
         )
         writer.add_scalars("Metrics", calculated_metrics, epoch)
         writer.add_scalars("GradNorms", grad_norms, epoch)
-        writer.add_scalar("LearningRate", prev_learning_rate, epoch)
         logger.debug("Writer have added new scalars.")
 
         if metrics[main_metric_name].is_it_better_than(best_main_metric_value):
