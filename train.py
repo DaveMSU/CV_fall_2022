@@ -243,8 +243,8 @@ def main():
                 loss_value = loss(y_pred, y)
                 logger.debug("Loss value has been calculated.")
                 loss_history.append(loss_value.cpu().data.item())
-                y_true_history.extend(y.cpu().data.tolist())
-                y_pred_history.extend(y_pred.cpu().data.tolist())
+                y_true_history.extend(y.cpu().data.tolist())  # TODO: rewrite this to numpys arrays.
+                y_pred_history.extend(y_pred.cpu().data.tolist())  # TODO: rewrite this to numpys arrays.
         val_loss = np.mean(loss_history)
         logger.info("val loss: %f" % val_loss)
 
