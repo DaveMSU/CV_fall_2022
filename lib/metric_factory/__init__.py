@@ -1,1 +1,1 @@
-from .metrics import MetricFactory
+from .metric_factory import MetricFactory
