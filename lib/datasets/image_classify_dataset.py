@@ -1,8 +1,10 @@
+import csv
+import pathlib
 import typing as tp
 
 import cv2
 import numpy as np
-import pathlib
+import pandas as pd
 import torch
 from PIL import Image
 
@@ -53,12 +55,14 @@ class ImageClassifyDataset(BaseImageDataset):
         return image, target, torch.Tensor(orig_shape)
 
     @staticmethod
-    def read_markup(file_path: pathlib.Path) -> tp.Dict[str, np.ndarray]:
-        path_to_values: tp.Dict[str, np.ndarray] = dict()
-        with open(file_path) as fhandle:
-            next(fhandle)  # skip the line with the column names.
-            for line in fhandle:
-                file_name, class_id = line.rstrip('\n').split(',')
-                path_to_values[file_name] = int(class_id)
+    def read_markup(file_path: pathlib.Path) -> tp.Dict[str, int]:
+        path_to_values: tp.Dict[str, int] = dict()
+        with open(file_path, "r") as f:
+            reader = csv.reader(f)
+            keys = next(reader)
+            for raw_line in reader:
+                row: tp.Dict[str, str] = {
+                    k: raw_line[i] for i, k in enumerate(keys)
+                }
+                path_to_values[row["filename"]] = int(row["class_id"])
         return path_to_values
-
