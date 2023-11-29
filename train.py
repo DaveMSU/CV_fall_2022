@@ -36,11 +36,11 @@ def main():
     # train/val dataloaders loading.
     dataloaders = dict()
     for mode in ["train", "val"]:
-        with open(learning_process["data"][f"{mode}"]["dump_path"], "rb") as f:
+        with open(learning_process["data"][mode]["dump_path"], "rb") as f:
             dataloaders[mode] = DataLoader(
                 dataset=pickle.load(f),
-                batch_size=learning_process["data"][f"{mode}"]["batch_size"],
-                shuffle=learning_process["data"][f"{mode}"]["shuffle"]
+                batch_size=learning_process["data"][mode]["batch_size"],
+                shuffle=learning_process["data"][mode]["shuffle"]
             )
         logger.debug(
             f"{mode.capitalize()} dataloader uploaded successfully."

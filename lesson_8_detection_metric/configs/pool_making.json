@@ -1,0 +1,36 @@
+{
+    "train_data_dir": "/var/lib/storage/data/cv_fall_2022/lesson_8_detection_metric/images",
+    "labels": "/var/lib/storage/data/cv_fall_2022/lesson_8_detection_metric/gt.csv",
+    "pools": [
+        {
+            "name": "train",
+            "dataset_type": "ImageClassifyDataset",
+            "dataset_params": {
+                "classes_num": 205,
+                "inclusion_condition": "lambda fname: fname.startswith('cropped_train')",
+                "new_size": [48, 48],
+                "transforms": [
+                    {
+                        "transform_type": "NoTargetEffectRandomCropTransform",
+                        "params": {
+                            "crop_sizes": [0.95, 0.95],
+                            "p": 1.0
+                        }
+                    }
+                ]
+            },
+            "dump_path": "/var/lib/storage/resources/cv_fall_2022/lesson_8_detection_metric/pools/train_pool.test.base"
+        },
+        {
+            "name": "val",
+            "dataset_type": "ImageClassifyDataset",
+            "dataset_params": {
+                "classes_num": 205,
+                "inclusion_condition": "lambda fname: fname.startswith('smalltest')",
+                "new_size": [48, 48],
+                "transforms": null
+            },
+            "dump_path": "/var/lib/storage/resources/cv_fall_2022/lesson_8_detection_metric/pools/val_pool.test.base"
+        }
+    ]
+}
