@@ -3,6 +3,38 @@ import logging
 import sys
 import typing as tp
 
+import numpy as np
+
+
+class RunningMeansHandler:
+    def __init__(self):
+        self._value: tp.Optional[tp.Union[float, np.ndarray]] = None
+        self._counter: int = 0
+
+    def add(
+            self,
+            value: tp.Optional[tp.Union[float, np.ndarray]],
+            n: int = 1
+    ) -> None:
+        assert n >= 0
+        assert (self._value is None) or (type(self._value) is type(value))
+        if value is None:
+            if self._counter != 0:
+                raise ValueError(
+                    "{self._counter=}, but have to be 0, if value is None!"
+                )
+        elif self._value is None:
+            self._counter, self._value = self._counter + n, value
+            assert self._counter == n
+        elif self._value is not None:
+            self._counter += n
+            self._value += (value - self._value) * (n / self._counter)
+        else:
+            assert False, "Unreachable line!"
+
+    def get_value(self) -> tp.Union[float, np.ndarray]:
+        return self._value
+
 
 def parse_args() -> tp.Dict[str, tp.Any]:
     parser = argparse.ArgumentParser()
