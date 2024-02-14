@@ -1,5 +1,5 @@
 {
-    "name": "bird_classifier",
+    "name": "road_sign_classifier",
     "layer_type": "NeuralNetwork",
     "params": {
         "architecture": [
