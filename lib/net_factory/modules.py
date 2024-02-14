@@ -1,26 +1,28 @@
+import abc
 import typing as tp
 from collections import OrderedDict
 from functools import reduce
+from itertools import accumulate
 
 import torch
 
 
-def _dict_to_module(architecture: tp.Dict[str, tp.Any]) -> torch.nn.Module:
+def dict_to_module(architecture: tp.Dict[str, tp.Any]) -> torch.nn.Module:
     params: tp.Union[list, dict] = architecture["params"]
     layer_type: str = architecture["layer_type"]
 
     if hasattr(torch.nn, layer_type):
         if layer_type == "Sequential" and isinstance(params, list):
             params = OrderedDict(
-                { 
-                    param["name"]: _dict_to_module(param)
+                [
+                    (param["name"], dict_to_module(param))
                     for param in params
-                }
+                ]
             )
             module = getattr(torch.nn, layer_type)(params)
         else:
             assert isinstance(params, dict), architecture["name"]
-            module =  getattr(torch.nn, layer_type)(**params)
+            module = getattr(torch.nn, layer_type)(**params)
     elif layer_type in globals():
         assert isinstance(params, dict), architecture["name"]
         module = globals()[layer_type](**params)
@@ -55,24 +57,25 @@ class Pad(torch.nn.Module):
         return torch.nn.functional.pad(x, **self._params)
 
 
-class _BaseNetModule(torch.nn.Module):
+class BaseNetModule(torch.nn.Module, abc.ABC):
     def __init__(self, architecture: tp.List[tp.Dict[str, tp.Any]]):
         super().__init__()
         self._modules_order: tp.List[str] = []
         for sub_architecture in architecture:
             self._modules_order.append(sub_architecture["name"])
-            module = _dict_to_module(sub_architecture)
+            module = dict_to_module(sub_architecture)
             setattr(self, sub_architecture["name"], module)
- 
+
+    @abc.abstractmethod
     def forward(self, input_tensor: torch.Tensor) -> torch.Tensor:
-        raise NotImplemented
+        raise NotImplementedError
 
     def remove_layer(self, layer_name: str) -> None:
         self._modules_order.remove(layer_name)
         del self._modules[layer_name]
 
 
-class BasicBlock(_BaseNetModule):
+class BasicBlock(BaseNetModule):
     def __init__(self, *args, **kwargs):
         self.downsample: tp.Optional[torch.nn.Module] = None
         super().__init__(*args, **kwargs)
@@ -92,7 +95,7 @@ class BasicBlock(_BaseNetModule):
         return out
 
 
-class Bottleneck(_BaseNetModule):
+class Bottleneck(BaseNetModule):
     def __init__(self, *args, **kwargs):
         self.downsample: tp.Optional[torch.nn.Module] = None
         super().__init__(*args, **kwargs)
@@ -116,14 +119,27 @@ class Bottleneck(_BaseNetModule):
         return out
 
 
-class NeuralNetwork(_BaseNetModule):
+class NeuralNetwork(BaseNetModule):
     def forward(self, input_tensor: torch.Tensor) -> torch.Tensor:
         return reduce(
             lambda x, f: f(x),
-            [
-                input_tensor,
-                *[getattr(self, name) for name in self._modules_order]
-            ]
+            (getattr(self, name) for name in self._modules_order),
+            input_tensor
+        )
+
+    def full_forward(
+            self,
+            input_tensor: torch.Tensor
+    ) -> tp.Any:  # change it to OrderedDict[str, torch.Tensor]
+        return OrderedDict(
+            accumulate(
+                self._modules_order,
+                lambda name_and_value, name: (
+                    name,
+                    getattr(self, name)(name_and_value[1])
+                ),
+                initial=("_input_tensor", input_tensor)
+            )
         )
 
 
@@ -132,5 +148,4 @@ class NetFactory:
     def create_network(
             config: tp.Dict[str, tp.Any]
     ) -> torch.nn.Module:
-        return _dict_to_module(config)
-
+        return dict_to_module(config)

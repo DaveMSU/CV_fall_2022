@@ -1,9 +1,9 @@
 import copy
+import pathlib
 import typing as tp
 
 import cv2
 import numpy as np
-import pathlib
 import torch
 from PIL import Image
 
@@ -25,7 +25,7 @@ class ImagePointsDataset(BaseImageDataset):
             for transform in self._transforms:
                 image, target = transform(image, target)
         image = np.array(image).astype(np.float32) / 255.
-        
+
         # Change shapes.
         orig_shape = image.shape
         self._items[index]["shape"] = orig_shape
@@ -36,7 +36,7 @@ class ImagePointsDataset(BaseImageDataset):
         # Convert to tensor.
         image = torch.from_numpy(image.transpose(2, 0, 1))
         if image.size(0) == 1:
-            image = image.repeat(3, 1, 1)        
+            image = image.repeat(3, 1, 1)
         target = torch.from_numpy(target.astype(np.float32))
         return image, target, torch.Tensor(orig_shape)
 
@@ -53,4 +53,3 @@ class ImagePointsDataset(BaseImageDataset):
                 )
                 path_to_values[file_name] = coords
         return path_to_values
-

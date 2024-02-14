@@ -1,0 +1,2208 @@
+{
+    "name": "road_sign_classifier",
+    "layer_type": "NeuralNetwork",
+    "params": {
+        "architecture": [
+            {
+                "name": "backbone",
+                "layer_type": "NeuralNetwork",
+                "params": {
+                    "architecture": [
+                        {
+                            "name": "conv1",
+                            "layer_type": "Conv2d",
+                            "params": {
+                                "in_channels": 3,
+                                "out_channels": 64,
+                                "groups": 1,
+                                "kernel_size": [
+                                    7,
+                                    7
+                                ],
+                                "stride": [
+                                    2,
+                                    2
+                                ],
+                                "padding": [
+                                    3,
+                                    3
+                                ],
+                                "bias": false,
+                                "padding_mode": "zeros"
+                            },
+                            "post_process": {
+                                "freeze_grad": true,
+                                "pretrain": null,
+                                "remove_layers": null
+                            }
+                        },
+                        {
+                            "name": "bn1",
+                            "layer_type": "BatchNorm2d",
+                            "params": {
+                                "num_features": 64,
+                                "eps": 1e-05,
+                                "momentum": 0.1,
+                                "affine": true,
+                                "track_running_stats": true
+                            },
+                            "post_process": {
+                                "freeze_grad": true,
+                                "pretrain": null,
+                                "remove_layers": null
+                            }
+                        },
+                        {
+                            "name": "relu",
+                            "layer_type": "ReLU",
+                            "params": {
+                                "inplace": true
+                            },
+                            "post_process": {
+                                "freeze_grad": true,
+                                "pretrain": null,
+                                "remove_layers": null
+                            }
+                        },
+                        {
+                            "name": "maxpool",
+                            "layer_type": "MaxPool2d",
+                            "params": {
+                                "kernel_size": 3,
+                                "stride": 2,
+                                "padding": 1,
+                                "dilation": 1,
+                                "return_indices": false,
+                                "ceil_mode": false
+                            },
+                            "post_process": {
+                                "freeze_grad": true,
+                                "pretrain": null,
+                                "remove_layers": null
+                            }
+                        },
+                        {
+                            "name": "layer1",
+                            "layer_type": "Sequential",
+                            "params": [
+                                {
+                                    "name": "0",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 64,
+                                                    "out_channels": 64,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 64,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 64,
+                                                    "out_channels": 64,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 64,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 64,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            },
+                                            {
+                                                "name": "downsample",
+                                                "layer_type": "Sequential",
+                                                "params": [
+                                                    {
+                                                        "name": "0",
+                                                        "layer_type": "Conv2d",
+                                                        "params": {
+                                                            "in_channels": 64,
+                                                            "out_channels": 256,
+                                                            "groups": 1,
+                                                            "kernel_size": [
+                                                                1,
+                                                                1
+                                                            ],
+                                                            "stride": [
+                                                                1,
+                                                                1
+                                                            ],
+                                                            "padding": [
+                                                                0,
+                                                                0
+                                                            ],
+                                                            "bias": false,
+                                                            "padding_mode": "zeros"
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "1",
+                                                        "layer_type": "BatchNorm2d",
+                                                        "params": {
+                                                            "num_features": 256,
+                                                            "eps": 1e-05,
+                                                            "momentum": 0.1,
+                                                            "affine": true,
+                                                            "track_running_stats": true
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "1",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 64,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 64,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 64,
+                                                    "out_channels": 64,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 64,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 64,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "2",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 64,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 64,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 64,
+                                                    "out_channels": 64,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 64,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 64,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            ],
+                            "post_process": {
+                                "freeze_grad": true,
+                                "pretrain": null,
+                                "remove_layers": null
+                            }
+                        },
+                        {
+                            "name": "layer2",
+                            "layer_type": "Sequential",
+                            "params": [
+                                {
+                                    "name": "0",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 128,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 128,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 128,
+                                                    "out_channels": 128,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        2,
+                                                        2
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 128,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 128,
+                                                    "out_channels": 512,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 512,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            },
+                                            {
+                                                "name": "downsample",
+                                                "layer_type": "Sequential",
+                                                "params": [
+                                                    {
+                                                        "name": "0",
+                                                        "layer_type": "Conv2d",
+                                                        "params": {
+                                                            "in_channels": 256,
+                                                            "out_channels": 512,
+                                                            "groups": 1,
+                                                            "kernel_size": [
+                                                                1,
+                                                                1
+                                                            ],
+                                                            "stride": [
+                                                                2,
+                                                                2
+                                                            ],
+                                                            "padding": [
+                                                                0,
+                                                                0
+                                                            ],
+                                                            "bias": false,
+                                                            "padding_mode": "zeros"
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "1",
+                                                        "layer_type": "BatchNorm2d",
+                                                        "params": {
+                                                            "num_features": 512,
+                                                            "eps": 1e-05,
+                                                            "momentum": 0.1,
+                                                            "affine": true,
+                                                            "track_running_stats": true
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "1",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 512,
+                                                    "out_channels": 128,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 128,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 128,
+                                                    "out_channels": 128,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 128,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 128,
+                                                    "out_channels": 512,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 512,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "2",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 512,
+                                                    "out_channels": 128,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 128,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 128,
+                                                    "out_channels": 128,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 128,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 128,
+                                                    "out_channels": 512,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 512,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "3",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 512,
+                                                    "out_channels": 128,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 128,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 128,
+                                                    "out_channels": 128,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 128,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 128,
+                                                    "out_channels": 512,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 512,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            ],
+                            "post_process": {
+                                "freeze_grad": true,
+                                "pretrain": null,
+                                "remove_layers": null
+                            }
+                        },
+                        {
+                            "name": "layer3",
+                            "layer_type": "Sequential",
+                            "params": [
+                                {
+                                    "name": "0",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 512,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        2,
+                                                        2
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 1024,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 1024,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            },
+                                            {
+                                                "name": "downsample",
+                                                "layer_type": "Sequential",
+                                                "params": [
+                                                    {
+                                                        "name": "0",
+                                                        "layer_type": "Conv2d",
+                                                        "params": {
+                                                            "in_channels": 512,
+                                                            "out_channels": 1024,
+                                                            "groups": 1,
+                                                            "kernel_size": [
+                                                                1,
+                                                                1
+                                                            ],
+                                                            "stride": [
+                                                                2,
+                                                                2
+                                                            ],
+                                                            "padding": [
+                                                                0,
+                                                                0
+                                                            ],
+                                                            "bias": false,
+                                                            "padding_mode": "zeros"
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "1",
+                                                        "layer_type": "BatchNorm2d",
+                                                        "params": {
+                                                            "num_features": 1024,
+                                                            "eps": 1e-05,
+                                                            "momentum": 0.1,
+                                                            "affine": true,
+                                                            "track_running_stats": true
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "1",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 1024,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 1024,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 1024,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "2",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 1024,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 1024,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 1024,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "3",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 1024,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 1024,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 1024,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "4",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 1024,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 1024,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 1024,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "5",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 1024,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 256,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 256,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 256,
+                                                    "out_channels": 1024,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 1024,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            ],
+                            "post_process": {
+                                "freeze_grad": true,
+                                "pretrain": null,
+                                "remove_layers": null
+                            }
+                        },
+                        {
+                            "name": "layer4",
+                            "layer_type": "Sequential",
+                            "params": [
+                                {
+                                    "name": "0",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 1024,
+                                                    "out_channels": 512,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 512,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 512,
+                                                    "out_channels": 512,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        2,
+                                                        2
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 512,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 512,
+                                                    "out_channels": 2048,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 2048,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            },
+                                            {
+                                                "name": "downsample",
+                                                "layer_type": "Sequential",
+                                                "params": [
+                                                    {
+                                                        "name": "0",
+                                                        "layer_type": "Conv2d",
+                                                        "params": {
+                                                            "in_channels": 1024,
+                                                            "out_channels": 2048,
+                                                            "groups": 1,
+                                                            "kernel_size": [
+                                                                1,
+                                                                1
+                                                            ],
+                                                            "stride": [
+                                                                2,
+                                                                2
+                                                            ],
+                                                            "padding": [
+                                                                0,
+                                                                0
+                                                            ],
+                                                            "bias": false,
+                                                            "padding_mode": "zeros"
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "1",
+                                                        "layer_type": "BatchNorm2d",
+                                                        "params": {
+                                                            "num_features": 2048,
+                                                            "eps": 1e-05,
+                                                            "momentum": 0.1,
+                                                            "affine": true,
+                                                            "track_running_stats": true
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "1",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 2048,
+                                                    "out_channels": 512,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 512,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 512,
+                                                    "out_channels": 512,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 512,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 512,
+                                                    "out_channels": 2048,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 2048,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "2",
+                                    "layer_type": "Bottleneck",
+                                    "params": {
+                                        "architecture": [
+                                            {
+                                                "name": "conv1",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 2048,
+                                                    "out_channels": 512,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn1",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 512,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv2",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 512,
+                                                    "out_channels": 512,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        3,
+                                                        3
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn2",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 512,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "conv3",
+                                                "layer_type": "Conv2d",
+                                                "params": {
+                                                    "in_channels": 512,
+                                                    "out_channels": 2048,
+                                                    "groups": 1,
+                                                    "kernel_size": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "stride": [
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "padding": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "bias": false,
+                                                    "padding_mode": "zeros"
+                                                }
+                                            },
+                                            {
+                                                "name": "bn3",
+                                                "layer_type": "BatchNorm2d",
+                                                "params": {
+                                                    "num_features": 2048,
+                                                    "eps": 1e-05,
+                                                    "momentum": 0.1,
+                                                    "affine": true,
+                                                    "track_running_stats": true
+                                                }
+                                            },
+                                            {
+                                                "name": "relu",
+                                                "layer_type": "ReLU",
+                                                "params": {
+                                                    "inplace": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            ],
+                            "post_process": {
+                                "freeze_grad": false,
+                                "pretrain": null,
+                                "remove_layers": null
+                            }
+                        },
+                        {
+                            "name": "avgpool",
+                            "layer_type": "AdaptiveAvgPool2d",
+                            "params": {
+                                "output_size": [
+                                    1,
+                                    1
+                                ]
+                            },
+                            "post_process": {
+                                "freeze_grad": false,
+                                "pretrain": null,
+                                "remove_layers": null
+                            }
+                        },
+                        {
+                            "name": "flatten",
+                            "layer_type": "Flatten",
+                            "params": {}
+                        },
+                        {
+                            "name": "fc",
+                            "layer_type": "Linear",
+                            "params": {
+                                "in_features": 2048,
+                                "out_features": 1000,
+                                "bias": true
+                            }
+                        }
+                    ]
+                },
+                "post_process": {
+                    "freeze_grad": false,
+                    "pretrain": "/var/lib/storage/resources/weights/resnet50_weights.imagenet1k_v1.stt",
+                    "remove_layers": ["fc"]
+                }
+            },
+            {
+                "name": "head",
+                "layer_type": "Linear",
+                "params": {
+                    "in_features": 2048,
+                    "out_features": 205,
+                    "bias": true
+                }
+            }
+        ]
+    }
+}
