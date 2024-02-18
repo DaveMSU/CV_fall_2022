@@ -6,7 +6,7 @@ import sklearn.metrics
 from . import additional_metrics
 
 
-class _sklearn_metric_handler:
+class sklearn_metric_handler:
     def __init__(self, metric_type: str, params: dict):
         self._metric_type = metric_type
         self._params = params
@@ -17,40 +17,37 @@ class _sklearn_metric_handler:
         self._worst_value = self._metric([1, 0], [0, 1])
         self._best_value = self._metric([1, 0], [1, 0])
         self._bigger_means_better : bool = self._best_value > self._worst_value
-        self._contained_value : tp.Optional[float] = None
 
     @property
     def worst_value(self) -> float:
         return self._worst_value
     
-    @property
-    def value(self) -> float:
-        return self._contained_value
-
-    def is_it_better_than(self, value: float) -> bool:
-        return self._contained_value > value \
-            if self._bigger_means_better else self._contained_value < value
+    def is_first_better_than_second(
+            self,
+            first_value: float,
+            second_value: float
+    ) -> bool:
+        return first_value > second_value \
+            if self._bigger_means_better else first_value < second_value
 
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         raise NotImplemented
 
 
-class _discrete(_sklearn_metric_handler):
+class discrete(sklearn_metric_handler):
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         assert y_true.shape == y_pred.shape
         assert y_true.ndim in {1, 2}
         if y_true.ndim == 2:
             y_true = y_true.argmax(axis=1)
             y_pred = y_pred.argmax(axis=1)
-        self._contained_value = self._metric(y_true, y_pred, **self._params)
-        return self._contained_value
+        return self._metric(y_true, y_pred, **self._params)
 
 
-class _continuous(_sklearn_metric_handler):
+class continuous(sklearn_metric_handler):
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         assert y_true.ndim in {1, 2}
-        self._contained_value = self._metric(y_true, y_pred, **self._params)
-        return self._contained_value
+        return self._metric(y_true, y_pred, **self._params)
 
 
 class MetricFactory:
@@ -72,11 +69,10 @@ class MetricFactory:
     ]
 
     @classmethod
-    def create_metric(cls, metric_type: str, params: dict) -> _sklearn_metric_handler:
+    def create_metric(cls, metric_type: str, params: dict) -> sklearn_metric_handler:
         if metric_type in cls._names_of_continuous_metrics:
-            return _continuous(metric_type=metric_type, params=params)
+            return continuous(metric_type=metric_type, params=params)
         elif metric_type in cls._names_of_discrete_metrics:
-            return _discrete(metric_type=metric_type, params=params)
+            return discrete(metric_type=metric_type, params=params)
         else:
             raise ValueError(f"Unknown metric type: `{metric_type}`.")
-

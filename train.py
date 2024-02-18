@@ -148,11 +148,18 @@ def main():
         for metric in learning_process["metrics"]
     }
     logger.debug(
-        "MetricFactory has created all metric handlers successfully."
+        "MetricFactory has created following metric handlers successfully: "
+        + ", ".join([f"\"{metric_name}\"" for metric_name in metrics])
+        + "."
     )
 
     main_metric_name = learning_process["main_metric_name"]
-    best_main_metric_value = metrics[main_metric_name].worst_value
+    best_main_metric_value: float = metrics[main_metric_name].worst_value
+    logger.debug(
+        f"Worst value ({best_main_metric_value}) as init has been "
+        f"chosen for the main metric (\"{main_metric_name}\")."
+    )
+
     best_epoch = 0
     train_loss_in_the_best_epoch = float("inf")
     val_loss_in_the_best_epoch = float("inf")
@@ -342,11 +349,15 @@ def main():
         writer.add_scalars("GradNorms", grad_norms, epoch)
         logger.debug("Writer have added new scalars.")
 
-        if metrics[main_metric_name].is_it_better_than(best_main_metric_value):
-            best_main_metric_value = running_means["metrics"][main_metric_name].get_value()
-            train_loss_in_the_best_epoch = running_means["train_loss"]
-            val_loss_in_the_best_epoch = running_means["val_loss"]
-            best_epoch = epoch
+        if metrics[main_metric_name].is_first_better_than_second(
+                running_means["metrics"][main_metric_name].get_value(),
+                best_main_metric_value
+        ):
+            best_main_metric_value: float = \
+                running_means["metrics"][main_metric_name].get_value()
+            train_loss_in_the_best_epoch: float = running_means["train_loss"].get_value()
+            val_loss_in_the_best_epoch: float = running_means["val_loss"].get_value()
+            best_epoch: int = epoch
             torch.save(
                 {
                     "model_state_dict": net.state_dict(),
@@ -386,4 +397,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
