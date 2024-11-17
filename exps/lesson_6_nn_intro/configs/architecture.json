@@ -1,94 +1,136 @@
-[
-    {
-        "layer_type": "Conv2d",
-        "params": {
-            "in_channels": 3,
-            "out_channels": 64,
-            "kernel_size": [3, 3],
-            "stride": 1,
-            "padding": 0
-        }
+{
+    "name": "face_pointer",
+    "layer_type": "NeuralNetwork",
+    "params": {
+        "architecture": [
+            {
+                "name": "backbone",
+                "layer_type": "NeuralNetwork",
+                "params": {
+                    "architecture": [
+                        {
+                            "name": "conv2d_0",
+                            "layer_type": "Conv2d",
+                            "params": {
+                                "in_channels": 3,
+                                "out_channels": 64,
+                                "kernel_size": [3, 3],
+                                "stride": 1,
+                                "padding": 0
+                            }
+                        },
+                        {
+                            "name": "relu_1",
+                            "layer_type": "ReLU",
+                            "params": {}
+                        },
+                        {
+                            "name": "maxpool2d_2",
+                            "layer_type": "MaxPool2d",
+                            "params": {
+                                "kernel_size": [2, 2],
+                                "stride": 2,
+                                "padding": 0
+                            }
+                        },
+                        {
+                            "name": "conv2d_3",
+                            "layer_type": "Conv2d",
+                            "params": {
+                                "in_channels": 64,
+                                "out_channels": 128,
+                                "kernel_size": [3, 3],
+                                "stride": 1,
+                                "padding": 0
+                            }        
+                        },
+                        {
+                            "name": "relu_4",
+                            "layer_type": "ReLU",
+                            "params": {}
+                        },    
+                        {
+                            "name": "maxpool2d_5",
+                            "layer_type": "MaxPool2d",
+                            "params": {
+                                "kernel_size": [2, 2],
+                                "stride": 2,
+                                "padding": 0
+                            }        
+                        },
+                        {
+                            "name": "conv2d_6",
+                            "layer_type": "Conv2d",
+                            "params": {
+                                "in_channels": 128,
+                                "out_channels": 256,
+                                "kernel_size": [3, 3],
+                                "stride": 1,
+                                "padding": 0
+                            }           
+                        },
+                        {
+                            "name": "relu_7",
+                            "layer_type": "ReLU",
+                            "params": {}
+                        },    
+                        {
+                            "name": "maxpool2d_8",
+                            "layer_type": "MaxPool2d",
+                            "params": {
+                                "kernel_size": [2, 2],
+                                "stride": 2,
+                                "padding": 0
+                            }                
+                        },
+                        {
+                            "name": "flatten_9",
+                            "layer_type": "Flatten",
+                            "params": {}
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "head",
+                "layer_type": "NeuralNetwork",
+                "params": {
+                    "architecture": [
+                        {
+                            "name": "linear_10",
+                            "layer_type": "Linear",
+                            "params": {
+                                "in_features": 9216,
+                                "out_features": 64            
+                            }
+                        },
+                        {
+                            "name": "relu_11",
+                            "layer_type": "ReLU",
+                            "params": {}
+                        },   
+                        {
+                            "name": "linear_12",
+                            "layer_type": "Linear",
+                            "params": {
+                                "in_features": 64,
+                                "out_features": 28            
+                            }
+                        },  
+                        {
+                            "name": "sigmoid_13",
+                            "layer_type": "Sigmoid",
+                            "params": {}
+                        }
+                    ]
+                }
+            }
+        ]
     },
-    {
-        "layer_type": "ReLU",
-        "params": {}
-    },
-    {
-        "layer_type": "MaxPool2d",
-        "params": {
-            "kernel_size": [2, 2],
-            "stride": 2,
-            "padding": 0
-        }
-    },
-    {
-        "layer_type": "Conv2d",
-        "params": {
-            "in_channels": 64,
-            "out_channels": 128,
-            "kernel_size": [3, 3],
-            "stride": 1,
-            "padding": 0
-        }        
-    },
-    {
-        "layer_type": "ReLU",
-        "params": {}
-    },    
-    {
-        "layer_type": "MaxPool2d",
-        "params": {
-            "kernel_size": [2, 2],
-            "stride": 2,
-            "padding": 0
-        }        
-    },
-    {
-        "layer_type": "Conv2d",
-        "params": {
-            "in_channels": 128,
-            "out_channels": 256,
-            "kernel_size": [3, 3],
-            "stride": 1,
-            "padding": 0
-        }           
-    },
-    {
-        "layer_type": "ReLU",
-        "params": {}
-    },    
-    {
-        "layer_type": "MaxPool2d",
-        "params": {
-            "kernel_size": [2, 2],
-            "stride": 2,
-            "padding": 0
-        }                
-    },
-    {
-        "layer_type": "Flatten",
-        "params": {}
-    },
-    {
-        "layer_type": "Linear",
-        "params": {
-            "in_features": 9216,
-            "out_features": 64            
-        }
-    },
-    {
-        "layer_type": "ReLU",
-        "params": {}
-    },   
-    {
-        "layer_type": "Linear",
-        "params": {
-            "in_features": 64,
-            "out_features": 28            
-        }
-    },  
-    {
-        "layer_type": "Sigmoid",
-        "params": {}
+    "post_process": {
+        "freeze_grad": false,
+        "pretrain": null,
+        "remove_layers": null
     }
-]
+}
+

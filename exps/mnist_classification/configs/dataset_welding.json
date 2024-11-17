@@ -1,0 +1,58 @@
+{
+    "datasets": [
+        {
+            "dump_path": "/var/lib/storage/data/benchmarks/computer_vision/mnist/welded/train_dataset.test",
+            "params": {
+                "raw_x_to_raw_y_mapper": "/var/lib/storage/data/benchmarks/computer_vision/mnist/raw/mapper.csv",
+                "inclusion_condition": "lambda pair: hash(pair.x.name) % 70 > 0",
+                "raw_model_input_output_pair_sample_type": "ImageAndLabel",
+                "transforms": [
+                    {
+                        "type": "ModelOutputStrToIntMapper",
+                        "params": {
+                            "mapper": {
+                                "0": 0,
+                                "1": 1,
+                                "2": 2,
+                                "3": 3,
+                                "4": 4,
+                                "5": 5,
+                                "6": 6,
+                                "7": 7,
+                                "8": 8,
+                                "9": 9
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "dump_path": "/var/lib/storage/data/benchmarks/computer_vision/mnist/welded/val_dataset.test",
+            "params": {
+                "raw_x_to_raw_y_mapper": "/var/lib/storage/data/benchmarks/computer_vision/mnist/raw/mapper.csv",
+                "inclusion_condition": "lambda pair: hash(pair.x.name) % 70 == 0",
+                "raw_model_input_output_pair_sample_type": "ImageAndLabel",
+                "transforms": [
+                    {
+                        "type": "ModelOutputStrToIntMapper",
+                        "params": {
+                            "mapper": {
+                                "0": 0,
+                                "1": 1,
+                                "2": 2,
+                                "3": 3,
+                                "4": 4,
+                                "5": 5,
+                                "6": 6,
+                                "7": 7,
+                                "8": 8,
+                                "9": 9
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

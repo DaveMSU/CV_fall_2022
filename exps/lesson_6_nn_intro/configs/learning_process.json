@@ -1,36 +1,80 @@
 {
     "logger": {
         "logger_name": "DebugLogger",
-        "logging_file": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/baseline/stdout.log",
+        "logging_file": "/var/lib/storage/resources/cv_fall_2022/lesson_8_detection_metric/experiments/test/stdout.log",
         "stdout": true
     },
     "data": {
         "train": {
-            "dump_path": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/pools/train_pool.base",
+            "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/welded/train_dataset.test",
             "batch_size": 512,
-            "shuffle": true
+            "shuffle": true,
+            "drop_last": true
         },
         "val": {
-            "dump_path": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/pools/val_pool.base",
-            "batch_size": 100,
-            "shuffle": true
+            "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/welded/val_dataset.test",
+            "batch_size": 1000,
+            "shuffle": false,
+            "drop_last": true
         }
     },
-    "start_model": null,
+    "continue_from": null,
     "hyper_params": {
         "loss": {
-            "loss_type": "MSELoss",
+            "type": "MSELoss",
             "params": {}
         },
         "optimizer": {
-            "optimizer_type": "Adam",
+            "type": "SGD",
             "params": {
-                "lr": 0.0003
+                "lr": 3.0
             }
         },
-        "epoch_nums": 2000
+        "lr_scheduler": {
+            "use_after": "epoch",
+            "type": "LambdaLR",
+            "params": {
+                "lr_lambda": "lambda step: 1.0"
+            }
+        },
+        "total_epoch_amount": 2000
     },
-    "device": "cuda:0",
-    "tensorboard_logs": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/baseline/tensorboard_runs",
-    "model_dump": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/baseline/2000_epochs.Adam_0003.MSE.no_dropout.no_aug.no_batchnorm.ckpt"
+    "device": "cuda:1",
+    "tensorboard_logs": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/test/tensorboard_runs",
+    "model_dumps": {
+        "best": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/test/best.ckpt",
+        "last": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/test/last.ckpt"
+    },
+    "sub_net_outputs_to_visualize": [
+        {
+            "sub_net_name": "backbone",
+            "number_of_vectors": 1,
+            "inclusion_condition": "lambda epoch: (epoch in range(10)) or (epoch in range(100, 105)) or (epoch in range(400, 405)) or (epoch > 995)"
+        }
+    ],
+    "metrics": {
+        "main": "rmse",
+        "all": [
+            {
+                "name": "mse",
+                "function": "mean_squared_error",
+                "params": {}
+            },
+            {
+                "name": "mae",
+                "function": "mean_absolute_error",
+                "params": {}
+            },
+            {
+                "name": "mape",
+                "function": "mean_absolute_percentage_error",
+                "params": {}
+            },
+            {
+                "name": "rmse",
+                "function": "root_mean_squared_error",
+                "params": {}
+            }
+        ]
+    }
 }

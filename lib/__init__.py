@@ -1,0 +1,1 @@
+from .welded_sample import ModelInputOutputPairSample

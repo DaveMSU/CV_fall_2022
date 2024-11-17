@@ -1,13 +1,13 @@
-# Code for making pools for trainling/validation/etc - make_pool.py
-### Example of running:
+# dl - is the only one entrence for all manipulation with deep learning processes.
+
+### weld_dataset: creats welded torch.Tensor in binary format (hdf5) that is ready for DataLoaders, example:
 ```
-python make_pool.py --config=./lesson_X/configs/pool_making/base.json
+./dl weld_dataset --config ./exps/lesson_6_nn_intro/configs/dataset_welding.json
 ```
 
-# Code for training networks, all output you can find at storage/resources - train.py
-### Example of running:
+### train: starts learning process, example:
 ```
-python train.py --net=./lesson_X/configs/architectures/simple_cnn.json --learn=./lesson_X/configs/learning_process/config.json
+./dl train --architecture_config ./exps/lesson_6_nn_intro/configs/architecture.json --learning_config=./exps/lesson_6_nn_intro/configs/learning_process.json
 ```
 
 # For all raw data like images (png/jpg/...) or labels (csv/txt/...) look into:

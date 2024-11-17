@@ -1,0 +1,65 @@
+{
+    "logger": {
+        "logger_name": "DebugLogger",
+        "logging_file": "/var/lib/storage/resources/dev_null/stdout.log",
+        "stdout": true
+    },
+    "data": {
+        "train": {
+            "dump_path": "/var/lib/storage/data/benchmarks/computer_vision/mnist/welded/train_dataset.test",
+            "batch_size": 1024,
+            "shuffle": true,
+            "drop_last": true
+        },
+        "val": {
+            "dump_path": "/var/lib/storage/data/benchmarks/computer_vision/mnist/welded/val_dataset.test",
+            "batch_size": 2048,
+            "shuffle": false,
+            "drop_last": true
+        }
+    },
+    "continue_from": null,
+    "hyper_params": {
+        "loss": {
+            "type": "CrossEntropyLoss",
+            "params": {}
+        },
+        "optimizer": {
+            "type": "SGD",
+            "params": {
+                "lr": 0.05
+            }
+        },
+        "lr_scheduler": {
+            "use_after": "epoch",
+            "type": "LambdaLR",
+            "params": {
+                "lr_lambda": "lambda step: 1.0"
+            }
+        },
+        "total_epoch_amount": 2000
+    },
+    "device": "cuda:1",
+    "tensorboard_logs": "/var/lib/storage/resources/dev_null/tensorboard_runs",
+    "model_dumps": {
+        "best": "/var/lib/storage/resources/dev_null/best.ckpt",
+        "last": "/var/lib/storage/resources/dev_null/last.ckpt"
+    },
+    "sub_net_outputs_to_visualize": [
+        {
+            "sub_net_name": "backbone",
+            "number_of_vectors": 1,
+            "inclusion_condition": "lambda epoch: (epoch in range(10)) or (epoch in range(100, 105)) or (epoch in range(400, 405)) or (epoch > 995)"
+        }
+    ],
+    "metrics": {
+        "main": "accuracy",
+        "all": [
+            {
+                "name": "accuracy",
+                "function": "accuracy_score",
+                "params": {}
+            }
+        ]
+    }
+}

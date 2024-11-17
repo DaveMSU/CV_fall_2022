@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+import pathlib, sys; sys.path.append(
+    (pathlib.Path(__file__).parent / "./lib").as_posix()
+)
+
+import argparse
+
+from cli.train import train_add_cmdargs
+from cli.weld_dataset import weld_dataset_add_cmdargs
+
+
+def main():
+    # Create parser.
+    parser = argparse.ArgumentParser(prog="dl")
+    subparsers = parser.add_subparsers(dest="main", metavar="COMMAND")
+    parser.set_defaults(main=(lambda cmdargs: parser.print_help()))
+    
+    # Add commands.
+    weld_dataset_add_cmdargs(parser, subparsers)
+    train_add_cmdargs(parser, subparsers)
+
+    cmd_args: argparse.Namespace = parser.parse_args()
+
+    cmd_args.main(cmd_args)
+
+
+if __name__ == "__main__":
+    main()
