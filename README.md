@@ -7,7 +7,7 @@
 
 ### train: starts learning process, example:
 ```
-./dl train --architecture_config ./exps/lesson_6_nn_intro/configs/architecture.json --learning_config=./exps/lesson_6_nn_intro/configs/learning_process.json
+./dl train --architecture_config ./exps/lesson_6_nn_intro/configs/architecture.json --learning_config ./exps/lesson_6_nn_intro/configs/learning_process.json
 ```
 
 # For all raw data like images (png/jpg/...) or labels (csv/txt/...) look into:

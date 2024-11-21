@@ -3,7 +3,6 @@ import pathlib
 import typing as tp
 from enum import Enum
 
-
 @dataclasses.dataclass(frozen=True)
 class LoggerConfig:
     logger_name: str
@@ -78,7 +77,7 @@ class ModelDumpsConfig:
 class SubNetOutputConfig:
     sub_net_name: str
     number_of_vectors: int
-    inclusion_condition: tp.Callable[tp.Tuple[str], bool]
+    inclusion_condition: tp.Callable[[int], bool]
 
 
 @dataclasses.dataclass(frozen=True)

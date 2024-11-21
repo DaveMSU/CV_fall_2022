@@ -6,9 +6,15 @@ from torch.utils.tensorboard import SummaryWriter
 from .dataset import HDF5Dataset
 from .learning_config import LearningConfig
 from .net_factory import NetFactory
+from .recording import ProgressMonitor
+from lib import (
+    ModelInputOutputPairSample,  # TODO: use it or delete from here
+    wrap_in_logger,
+)
 
 
 class TrainingContext:  # TODO: deal with _attrs
+    @wrap_in_logger(level="debug", ignore_args=(0,))
     def __init__(
             self,
             net_arch_config: tp.Dict[str, tp.Any],  # result of json.load(*)
@@ -20,38 +26,60 @@ class TrainingContext:  # TODO: deal with _attrs
         self._init_hyper_params(learning_config)
         self._init_monitorings(learning_config)
 
+    def __repr__(self) -> str:
+        return (
+            "TrainingContext("
+                f"dataloaders={self._dataloaders}, "
+                f"device={self._device}, "
+                "net=torch.nn.Module, "
+                f"loss={self._loss}, "
+                f"lr_scheduler={self._lr_scheduler}, "
+                f"total_epoch_amount={self._total_epoch_amount}, "
+                f"writer={self._writer}"
+            ")"
+         )
+
     @property
+    @wrap_in_logger(level="trace", ignore_args=(0,))
     def dataloaders(self) -> tp.Dict[str, torch.utils.data.DataLoader]:
         return self._dataloaders
 
     @property
+    @wrap_in_logger(level="trace", ignore_args=(0,))
     def device(self) -> torch.device:
         return self._device
 
     @property
+    @wrap_in_logger(level="trace", ignore_args=(0,))
     def net(self) -> torch.nn.Module:
         return self._net
 
     @property
+    @wrap_in_logger(level="trace", ignore_args=(0,))
     def loss(self) -> torch.nn.modules.loss._Loss:
         return self._loss
 
     @property
+    @wrap_in_logger(level="trace", ignore_args=(0,))
     def optimizer(self) -> torch.optim.Optimizer:
         return self._optimizer
 
     @property
+    @wrap_in_logger(level="debug", ignore_args=(0,))
     def lr_scheduler(self) -> torch.optim.lr_scheduler.LRScheduler:
         return self._lr_scheduler
 
     @property
+    @wrap_in_logger(level="debug", ignore_args=(0,))
     def total_epoch_amount(self) -> int:
         return self._total_epoch_amount
 
     @property
+    @wrap_in_logger(level="debug", ignore_args=(0,))  # TODO: may be 'trace'?
     def writer(self) -> SummaryWriter:
         return self._writer
 
+    @wrap_in_logger(level="debug", ignore_args=(0,))
     def _init_dataloaders(self, learning_config: LearningConfig) -> None:
         self._dataloaders: tp.Dict[str, DataLoader] = dict()
         for mode in ["train", "val"]:
@@ -61,13 +89,16 @@ class TrainingContext:  # TODO: deal with _attrs
                 shuffle=getattr(learning_config.data, mode).shuffle
             )
 
+    @wrap_in_logger(level="debug", ignore_args=(0,))
     def _init_device(self, learning_config: LearningConfig) -> None:  # TODO: make it a list of devices instead
         self._device = torch.device(learning_config.device)
 
+    @wrap_in_logger(level="debug", ignore_args=(0,))
     def _init_net(self, net_arch_config: tp.Dict[str, tp.Any]) -> None:
         self._net = NetFactory.create_network(net_arch_config)
         self._net = self._net.to(self._device)
         
+    @wrap_in_logger(level="debug", ignore_args=(0,))
     def _init_hyper_params(self, learning_config: LearningConfig) -> None:
         self._loss = getattr(
             torch.nn,
@@ -100,6 +131,7 @@ class TrainingContext:  # TODO: deal with _attrs
         else:
             self._total_epoch_amount: int = tea
 
+    @wrap_in_logger(level="debug", ignore_args=(0,))
     def _init_monitorings(self, learning_config: LearningConfig) -> None:
         self._writer = SummaryWriter(learning_config.tensorboard_logs)
         self._metrics = tp.Any  # TODO: implement
@@ -112,41 +144,57 @@ class Trainer:  # TODO: make it a singleton
             learning_config: LearningConfig
     ):
         self._cntx = TrainingContext(net_arch_config, learning_config)
+        self._progress_monitor = ProgressMonitor(
+            sub_net_names=[x[0] for x in self._cntx.net.named_children()]
+        )
 
-    def run(self) -> None:
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+                "TrainingContext=..., "
+                f"ProgressMonitor={self._progress_monitor}"
+            ")"
+        )
+
+    @wrap_in_logger(level="debug")
+    def run(self) -> None:  # TODO: return here after Dima's code review
         for epoch in range(self._cntx.total_epoch_amount):
-            self._train_once_on_the_dataset(epoch)
-            self._validate_once_on_the_dataset(epoch)
+            with self._progress_monitor:
+                self._process_dataset(mode="train")
+                self._process_dataset(mode="val")  # TODO: make val optional
 
-    def _train_once_on_the_dataset(self, epoch: int) -> None:
-        import numpy as np
-        train_loss_history = []
-        grads_norm_history = []
-        self._cntx.net.train()
-        for X, y in self._cntx.dataloaders["train"]:
-            self._cntx.optimizer.zero_grad()
-            X = X.to(self._cntx.device)
-            y = y.to(self._cntx.device)
-            y_pred = self._cntx.net(X)
-            loss_value = self._cntx.loss(y_pred, y)
-            # print("train loss:", loss_value.cpu().item())
+    @wrap_in_logger(level="debug", ignore_args=(0,))
+    def _process_dataset(self, *, mode: str) -> None:
+        getattr(
+            self._cntx.net,
+            {"train": "train", "val": "eval"}[mode]
+        )()
+        for X, Y in self._cntx.dataloaders[mode]:
+            if mode == "train":
+                self._cntx.optimizer.zero_grad()
+            self._process_batch(X, Y, mode)
+            if mode == "train":
+                self._cntx.optimizer.step()
+                self._cntx.optimizer.zero_grad()
+            self._progress_monitor.log_batch_procedure(mode)  # TODO: may be it should be moved after GA maintainance
+        self._progress_monitor.log_epoch(mode)  # TODO: -=-
+
+    @wrap_in_logger(level="debug", ignore_args=(0,))
+    def _process_batch(
+            self,
+            X: torch.Tensor,
+            Y: torch.Tensor,
+            /,
+            mode: str
+    ) -> None:
+        assert mode in ["train", "val"]  # TODO: use enum
+        X = X.to(self._cntx.device)
+        Y = Y.to(self._cntx.device)
+        Y_pred = self._cntx.net(X)
+        loss_value = self._cntx.loss(Y_pred, Y)
+        if mode == "train":
             loss_value.backward()
-            self._cntx.optimizer.step()
-            train_loss_history.append(loss_value.cpu().item())
-            grad = []
-            for param in self._cntx.net.parameters():
-                if param.grad is not None:
-                    grad.extend(param.grad.cpu().reshape(-1).tolist())
-            grads_norm_history.append((np.array(grad) ** 2).sum() ** 0.5)
-        self._cntx.optimizer.zero_grad()
-        print("mean train loss:", sum(train_loss_history) / len(train_loss_history))
-        print("grad norm:", np.mean(grads_norm_history))
 
-    def _validate_once_on_the_dataset(self, epoch: int) -> None:
-        self._cntx.net.eval()
-        for X, y in self._cntx.dataloaders["val"]:
-            X = X.to(self._cntx.device)
-            y = y.to(self._cntx.device)
-            y_pred = self._cntx.net(X)
-            loss_value = self._cntx.loss(y_pred, y)
-            print("val loss:", loss_value.cpu().item())
+        self._progress_monitor.record_batch_processing(
+            mode, X, Y, Y_pred, loss_value, self._cntx.net
+        )

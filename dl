@@ -4,9 +4,27 @@ import pathlib, sys; sys.path.append(
 )
 
 import argparse
+import logging  # TODO: move it somewhere deeper
 
 from cli.train import train_add_cmdargs
 from cli.weld_dataset import weld_dataset_add_cmdargs
+
+
+_TRACE_LEVEL = 5
+
+logging.addLevelName(_TRACE_LEVEL, "TRACE")
+def _trace(self, message, *args, **kwargs):
+    if self.isEnabledFor(_TRACE_LEVEL):
+        self._log(_TRACE_LEVEL, message, *args, **kwargs)
+logging.Logger.trace = _trace
+
+logging.basicConfig(  # TODO: move it somewhere deeper
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ],
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 
 def main():
