@@ -1,7 +1,14 @@
 import dataclasses
+import enum
 import typing as tp
 
 import torch
+
+
+@enum.unique
+class LearningMode(enum.Enum):
+    TRAIN = "train"
+    VAL = "val"
 
 
 @dataclasses.dataclass

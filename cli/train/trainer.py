@@ -4,10 +4,11 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from .dataset import HDF5Dataset
-from .learning_config import LearningConfig
+from .learning_config import LearningConfig, UpdationLevel
 from .net_factory import NetFactory
-from .recording import ProgressMonitor
+from .progress_monitor import ProgressMonitor
 from lib import (
+    LearningMode,
     ModelInputOutputPairSample,  # TODO: use it or delete from here
     wrap_in_logger,
 )
@@ -41,7 +42,10 @@ class TrainingContext:  # TODO: deal with _attrs
 
     @property
     @wrap_in_logger(level="trace", ignore_args=(0,))
-    def dataloaders(self) -> tp.Dict[str, torch.utils.data.DataLoader]:
+    def dataloaders(self) -> tp.Dict[
+            LearningMode,
+            torch.utils.data.DataLoader
+    ]:
         return self._dataloaders
 
     @property
@@ -81,12 +85,20 @@ class TrainingContext:  # TODO: deal with _attrs
 
     @wrap_in_logger(level="debug", ignore_args=(0,))
     def _init_dataloaders(self, learning_config: LearningConfig) -> None:
-        self._dataloaders: tp.Dict[str, DataLoader] = dict()
-        for mode in ["train", "val"]:
+        self._dataloaders: tp.Dict[
+                LearningMode,
+                torch.utils.data.DataLoader
+        ] = dict()
+        for mode in LearningMode:
             self._dataloaders[mode] = torch.utils.data.DataLoader(
-                HDF5Dataset(getattr(learning_config.data, mode).dump_path),
-                batch_size=getattr(learning_config.data, mode).batch_size,
-                shuffle=getattr(learning_config.data, mode).shuffle
+                HDF5Dataset(
+                    getattr(learning_config.data, mode.value).dump_path
+                ),
+                batch_size=getattr(
+                    learning_config.data,
+                    mode.value
+                ).batch_size,
+                shuffle=getattr(learning_config.data, mode.value).shuffle
             )
 
     @wrap_in_logger(level="debug", ignore_args=(0,))
@@ -159,25 +171,26 @@ class Trainer:  # TODO: make it a singleton
     @wrap_in_logger(level="debug")
     def run(self) -> None:  # TODO: return here after Dima's code review
         for epoch in range(self._cntx.total_epoch_amount):
-            with self._progress_monitor:
-                self._process_dataset(mode="train")
-                self._process_dataset(mode="val")  # TODO: make val optional
+            with self._progress_monitor:  # TODO: re-think what epoch is
+                self._process_dataset(LearningMode.TRAIN)
+                self._process_dataset(LearningMode.VAL)
+            self._progress_monitor.log_updation(UpdationLevel.EPOCH, LearningMode.TRAIN)  # TODO: reduce the length
+            self._progress_monitor.log_updation(UpdationLevel.EPOCH, LearningMode.VAL)  # TODO: reduce the length
 
     @wrap_in_logger(level="debug", ignore_args=(0,))
-    def _process_dataset(self, *, mode: str) -> None:
+    def _process_dataset(self, mode: LearningMode) -> None:
         getattr(
             self._cntx.net,
-            {"train": "train", "val": "eval"}[mode]
+            {LearningMode.TRAIN: "train", LearningMode.VAL: "eval"}[mode]
         )()
         for X, Y in self._cntx.dataloaders[mode]:
-            if mode == "train":
+            if mode == LearningMode.TRAIN:
                 self._cntx.optimizer.zero_grad()
             self._process_batch(X, Y, mode)
-            if mode == "train":
+            if mode == LearningMode.TRAIN:
                 self._cntx.optimizer.step()
                 self._cntx.optimizer.zero_grad()
-            self._progress_monitor.log_batch_procedure(mode)  # TODO: may be it should be moved after GA maintainance
-        self._progress_monitor.log_epoch(mode)  # TODO: -=-
+            self._progress_monitor.log_updation(UpdationLevel.GSTEP, mode)  # TODO: may be it should be moved after GA maintainance
 
     @wrap_in_logger(level="debug", ignore_args=(0,))
     def _process_batch(
@@ -185,14 +198,13 @@ class Trainer:  # TODO: make it a singleton
             X: torch.Tensor,
             Y: torch.Tensor,
             /,
-            mode: str
+            mode: LearningMode
     ) -> None:
-        assert mode in ["train", "val"]  # TODO: use enum
         X = X.to(self._cntx.device)
         Y = Y.to(self._cntx.device)
         Y_pred = self._cntx.net(X)
         loss_value = self._cntx.loss(Y_pred, Y)
-        if mode == "train":
+        if mode == LearningMode.TRAIN:
             loss_value.backward()
 
         self._progress_monitor.record_batch_processing(

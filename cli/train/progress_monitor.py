@@ -6,11 +6,20 @@ import typing as tp
 import numpy as np
 import torch
 
-from lib import wrap_in_logger
+from .learning_config import UpdationLevel
+from lib import (
+    LearningMode,
+    wrap_in_logger,
+)
 
 T = tp.TypeVar('T')
 
 
+# TODO: want to improve this class and move it to the lib dir
+#  it could be used for gradient accumulation algo, eponential running means
+#  like in batch norm realisation so I will be able see several
+#  running stats not for several sample amounts, it could be helpfull
+#  for example when epoch is huge like in LM tasks.
 class _BaseRunningMeansHandler(abc.ABC, tp.Generic[T]):
     def __init__(self):
         self._value: tp.Optional[T] = None
@@ -90,10 +99,10 @@ class _NumpyArrayRunningMeansHandler(_BaseRunningMeansHandler[np.ndarray]):
 @dataclasses.dataclass(frozen=True)
 class _BatchStatsRecord:  # TODO: looks like it should be rewritten before GA
     size: int
-    X_shape: tp.Tuple[int, ...]
-    Y_shape: tp.Tuple[int, ...]
+    X_shape: tp.Tuple[int, ...]  # TODO: may be remove this?
+    Y_shape: tp.Tuple[int, ...]  # TODO: may be remove this?
     loss_value: float
-    grads: tp.Dict[str, np.ndarray]  # sub_ner_name to (int,) shape np.array
+    grads: tp.Dict[str, tp.Optional[np.ndarray]]  # sub_ner_name to (int,) shaped np.array
 
 
 class ProgressMonitor:
@@ -102,31 +111,26 @@ class ProgressMonitor:
         self._last_finished_epoch: tp.Optional[int] = None
         self._processing_epoch: tp.Optional[int] = None
         self._last_batch_stats: tp.Dict[
-                str,  # "train" / "val"
+                LearningMode,
                 tp.Optional[_BatchStatsRecord]
-        ] = {
-            "train": None,
-            "val": None
-        }
+        ] = {mode: None for mode in LearningMode}
         self._loss_value = {
             "value": {
-                "train": None,  # tp.Optional[float]
-                "val": None  # tp.Optional[float]
+                mode: None for mode in LearningMode  # tp.Optional[float]
             },
             "buffer": {
-                "train": _FloatRunningMeansHandler(),
-                "val": _FloatRunningMeansHandler()
+                mode: _FloatRunningMeansHandler() for mode in LearningMode
             }
         }
         self._grads = {  # TODO: use ordered dict?
             name: {
                 "value": {
-                    "train": None,  # tp.Optional[np.ndarray], shape: (int,)
-                    "val": None  # tp.Optional[np.ndarray], shape: (int,)
+                    mode: None  # tp.Optional[np.ndarray], shape: (int,)
+                    for mode in LearningMode
                 },
                 "buffer": {
-                    "train": _NumpyArrayRunningMeansHandler(),
-                    "val": _NumpyArrayRunningMeansHandler()
+                    mode: _NumpyArrayRunningMeansHandler()
+                    for mode in LearningMode
                 }
             } for name in sub_net_names
         }
@@ -152,9 +156,9 @@ class ProgressMonitor:
         self._logger.info(f"epoch `{self._processing_epoch}` has started")
 
     @wrap_in_logger(level="debug", ignore_args=(0,))
-    def __exit__(self, *args) -> None:
+    def __exit__(self, *args) -> None:  # TODO: looks like has a bug, run with few epoch num
         assert type(self._processing_epoch) == int
-        for mode in ["train", "val"]:
+        for mode in LearningMode:
             self._loss_value["value"][mode] = self._loss_value[
                 "buffer"
             ][mode].flush()
@@ -166,26 +170,19 @@ class ProgressMonitor:
         self._processing_epoch = None
         self._logger.info(f"epoch `{self._last_finished_epoch}` has finished")
 
-    def log_epoch(self, mode: str) -> None:
-        assert mode in ["train", "val"]
-        self._logger.info(self._processing_epoch)  # TODO: finish the implementation
-
-    def log_batch_procedure(self, mode: str) -> None:
-        assert mode in ["train", "val"]
-        # self._logger.debug(f"current epoch: `{self._processing_epoch}")
-        # self._logger.debug(f"a `{mode}` step has been done ")
-        self._logger.info(f"`{mode}` batch stats:")
-        self._logger.info(f"loss - `{self._last_batch_stats[mode].loss_value}`")
-        self._logger.info(f"size - `{self._last_batch_stats[mode].size}`")
-        for sub_net_name, gradient_dict in self._grads.items():
-            vec = gradient_dict["value"][mode]
-            if vec is not None:
-                self._logger.info(f"grad norm - `{(vec ** 2).sum() ** 0.5}`")
+    def log_updation(self, level: UpdationLevel, *args, **kwargs) -> None:
+        if level == UpdationLevel.EPOCH:
+            self._log_epoch(*args, **kwargs)
+        elif level == UpdationLevel.GSTEP:
+            self._log_gradient_step(*args, **kwargs)
+        # TODO: elif level == UpdationLevel.ASTEP: ...
+        else:
+            assert False, "Unreachable line!"
 
     @wrap_in_logger(level="debug", ignore_args=(0, 6))
     def record_batch_processing(
             self,
-            mode: str,  # "train" or "val"  TODO: use enum
+            mode: LearningMode,
             X: torch.Tensor,  # ndim = int
             Y: torch.Tensor,  # ndim = int
             Y_pred: torch.Tensor,  # ndim = int (same as Y, even shape is)
@@ -203,20 +200,45 @@ class ProgressMonitor:
         )
         self._loss_value["buffer"][mode].add(_stats.loss_value, n=_stats.size)
         for sub_net_name, grad in _stats.grads.items():
-            assert grad.ndim == 1
+            assert (grad is None) or (grad.ndim == 1)
             self._grads[sub_net_name]["buffer"][mode].add(grad, n=_stats.size)
         self._last_batch_stats[mode] = _stats
 
-    def _get_grads(self, net: torch.nn.Module) -> tp.Dict[str, np.ndarray]:
+    def _log_epoch(self, mode: LearningMode) -> None:
+        self._logger.info(f"`{mode.value}`\tepoch stats:")
+        self._logger.info(f"loss - `{self._loss_value['value'][mode]}`")
+        for sub_net_name, gradient_dict in self._grads.items():
+            vec = gradient_dict["value"][mode]
+            if vec is not None:
+                _norm: flaot = (vec ** 2).sum() ** 0.5
+                self._logger.info(f"grad norm - `{_norm}`\t(`{sub_net_name}`)")
+
+    def _log_gradient_step(self, mode: LearningMode) -> None:
+        self._logger.info(f"`{mode.value}`\tbatch stats:")
+        self._logger.info(
+            f"loss - `{self._last_batch_stats[mode].loss_value}`"
+        )
+        self._logger.info(f"size - `{self._last_batch_stats[mode].size}`")
+        for sub_net_name, vec in self._last_batch_stats[mode].grads.items():  # TODO: reduce the length
+            if vec is not None:
+                _norm: flaot = (vec ** 2).sum() ** 0.5
+                self._logger.info(f"grad norm - `{_norm}`\t(`{sub_net_name}`)")
+
+    def _get_grads(
+            self,
+            net: torch.nn.Module
+    ) -> tp.Dict[str, tp.Optional[np.ndarray]]:
         grads: tp.Dict[str, np.ndarray] = dict()  # shape: (int,)        
         for sub_net_name, sub_net in net.named_children():  # TODO: RAM memory bottle neck.
-            gradient = np.array([])
+            _gradient = np.array([])
             for param in sub_net.parameters():
                 grad_: tp.Optional[torch.Tensor] = param.grad
                 if grad_ is not None:
-                    gradient = np.concatenate(  # TODO: use np.Xstack, I used at work
-                        (gradient, grad_.view(-1).cpu().numpy())
+                    _gradient = np.hstack(
+                        (_gradient, grad_.view(-1).cpu().numpy())
                     )
-            grads[sub_net_name] = gradient
+            if _gradient.shape[0] > 0:
+                grads[sub_net_name] = _gradient
+            else:
+                grads[sub_net_name] = None
         return grads
-
