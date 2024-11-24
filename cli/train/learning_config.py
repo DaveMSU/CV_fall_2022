@@ -83,16 +83,16 @@ class _SubNetOutputConfig:
 
 
 @dataclasses.dataclass(frozen=True)
-class _OneMetricConfig:
+class OneMetricConfig:
     name: str
     function: str
     params: tp.Dict[str, tp.Any]  # kwargs
 
 
 @dataclasses.dataclass(frozen=True)
-class _ManyMetricsConfig:
+class ManyMetricsConfig:
     main: str
-    all: tp.List[_OneMetricConfig]
+    all: tp.List[OneMetricConfig]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -105,7 +105,7 @@ class LearningConfig:
     tensorboard_logs: pathlib.Path
     model_dumps: _ModelDumpsConfig
     sub_net_outputs_to_visualize: tp.List[_SubNetOutputConfig]
-    metrics: _ManyMetricsConfig
+    metrics: ManyMetricsConfig
 
     @classmethod
     def from_dict(cls, d: tp.Dict[str, tp.Any]) -> 'LearningConfig':
@@ -167,10 +167,10 @@ class LearningConfig:
                     inclusion_condition=eval(sub_d["inclusion_condition"])
                 ) for sub_d in d["sub_net_outputs_to_visualize"]
             ],
-            metrics=_ManyMetricsConfig(
+            metrics=ManyMetricsConfig(
                 main=d["metrics"]["main"],
                 all=[
-                    _OneMetricConfig(**sub_d) for sub_d in d["metrics"]["all"]
+                    OneMetricConfig(**sub_d) for sub_d in d["metrics"]["all"]
                 ]
             )
         )

@@ -7,6 +7,7 @@ import numpy as np
 import torch
 
 from .learning_config import UpdationLevel
+from .metric_factory import MetricHandlerContainer, MetricValueContainer
 from lib import (
     LearningMode,
     wrap_in_logger,
@@ -103,11 +104,17 @@ class _BatchStatsRecord:  # TODO: looks like it should be rewritten before GA
     Y_shape: tp.Tuple[int, ...]  # TODO: may be remove this?
     loss_value: float
     grads: tp.Dict[str, tp.Optional[np.ndarray]]  # sub_ner_name to (int,) shaped np.array
+    metrics: MetricValueContainer
 
 
 class ProgressMonitor:
-    def __init__(self, sub_net_names: tp.List[str]):  # TODO: tp.Iterator
+    def __init__(
+            self,
+            sub_net_names: tp.List[str],  # TODO: tp.Iterator
+            metrics: MetricHandlerContainer
+    ):
         self._logger = logging.getLogger(self.__class__.__name__)
+        self._metrics = metrics
         self._last_finished_epoch: tp.Optional[int] = None
         self._processing_epoch: tp.Optional[int] = None
         self._last_batch_stats: tp.Dict[
@@ -196,7 +203,11 @@ class ProgressMonitor:
             Y_shape=Y.shape,
             size=X.shape[0],
             loss_value=loss.cpu().item(),
-            grads=self._get_grads(net)
+            grads=self._get_grads(net),
+            metrics=self._metrics(
+                Y.cpu().detach().numpy(),
+                Y_pred.cpu().detach().numpy()
+            )
         )
         self._loss_value["buffer"][mode].add(_stats.loss_value, n=_stats.size)
         for sub_net_name, grad in _stats.grads.items():
@@ -205,24 +216,29 @@ class ProgressMonitor:
         self._last_batch_stats[mode] = _stats
 
     def _log_epoch(self, mode: LearningMode) -> None:
-        self._logger.info(f"`{mode.value}`\tepoch stats:")
-        self._logger.info(f"loss - `{self._loss_value['value'][mode]}`")
+        self._logger.info(f"`{mode.value}` epoch stats:")
+        self._logger.info(f"loss - {self._loss_value['value'][mode]}")
         for sub_net_name, gradient_dict in self._grads.items():
             vec = gradient_dict["value"][mode]
             if vec is not None:
                 _norm: flaot = (vec ** 2).sum() ** 0.5
-                self._logger.info(f"grad norm - `{_norm}`\t(`{sub_net_name}`)")
+                self._logger.info(f"grad norm - {sub_net_name} - {_norm}")
 
     def _log_gradient_step(self, mode: LearningMode) -> None:
-        self._logger.info(f"`{mode.value}`\tbatch stats:")
+        self._logger.info(f"`{mode.value}` batch stats:")
         self._logger.info(
-            f"loss - `{self._last_batch_stats[mode].loss_value}`"
+            f"loss - {self._last_batch_stats[mode].loss_value}"
         )
-        self._logger.info(f"size - `{self._last_batch_stats[mode].size}`")
+        self._logger.info(f"size - {self._last_batch_stats[mode].size}")
         for sub_net_name, vec in self._last_batch_stats[mode].grads.items():  # TODO: reduce the length
             if vec is not None:
                 _norm: flaot = (vec ** 2).sum() ** 0.5
-                self._logger.info(f"grad norm - `{_norm}`\t(`{sub_net_name}`)")
+                self._logger.info(f"grad norm - {sub_net_name} - {_norm}")
+        for name, value in self._last_batch_stats[mode].metrics.all.items():
+            _msg = f"metric - {name} - {value}"
+            if self._last_batch_stats[mode].metrics.main_metric_name == name:
+                _msg += " (main)"
+            self._logger.info(_msg)
 
     def _get_grads(
             self,

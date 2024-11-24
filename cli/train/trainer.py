@@ -5,6 +5,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from .dataset import HDF5Dataset
 from .learning_config import LearningConfig, UpdationLevel
+from .metric_factory import MetricHandlerContainer
 from .net_factory import NetFactory
 from .progress_monitor import ProgressMonitor
 from lib import (
@@ -145,8 +146,8 @@ class TrainingContext:  # TODO: deal with _attrs
 
     @wrap_in_logger(level="debug", ignore_args=(0,))
     def _init_monitorings(self, learning_config: LearningConfig) -> None:
-        self._writer = SummaryWriter(learning_config.tensorboard_logs)
-        self._metrics = tp.Any  # TODO: implement
+        self._writer = SummaryWriter(learning_config.tensorboard_logs)  # TODO: move and this behivour to PMonitor
+        # self._metrics = MetricContainer.from_config(learning_config.metrics)
 
 
 class Trainer:  # TODO: make it a singleton
@@ -157,7 +158,12 @@ class Trainer:  # TODO: make it a singleton
     ):
         self._cntx = TrainingContext(net_arch_config, learning_config)
         self._progress_monitor = ProgressMonitor(
-            sub_net_names=[x[0] for x in self._cntx.net.named_children()]
+            sub_net_names=[
+                x[0] for x in self._cntx.net.named_children()
+            ],
+            metrics=MetricHandlerContainer.from_config(
+                learning_config.metrics
+            ),
         )
 
     def __repr__(self) -> str:
