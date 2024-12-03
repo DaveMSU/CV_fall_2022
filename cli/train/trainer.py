@@ -144,9 +144,10 @@ class TrainingContext:  # TODO: deal with _attrs
         else:
             self._total_epoch_amount: int = tea
 
-    @wrap_in_logger(level="debug", ignore_args=(0,))
+    @wrap_in_logger(level="debug", ignore_args=(0,))  # TODO: rm next lines
     def _init_monitorings(self, learning_config: LearningConfig) -> None:
-        self._writer = SummaryWriter(learning_config.tensorboard_logs)  # TODO: move and this behivour to PMonitor
+        pass
+        # self._writer = SummaryWriter(learning_config.tensorboard_logs)  # TODO: move and this behivour to PMonitor
         # self._metrics = MetricContainer.from_config(learning_config.metrics)
 
 
@@ -164,6 +165,9 @@ class Trainer:  # TODO: make it a singleton
             metrics=MetricHandlerContainer.from_config(
                 learning_config.metrics
             ),
+            tensorboard_writer=SummaryWriter(
+                learning_config.tensorboard_logs
+            )
         )
 
     def __repr__(self) -> str:
@@ -177,9 +181,11 @@ class Trainer:  # TODO: make it a singleton
     @wrap_in_logger(level="debug")
     def run(self) -> None:  # TODO: return here after Dima's code review
         for epoch in range(self._cntx.total_epoch_amount):
-            with self._progress_monitor:  # TODO: re-think what epoch is
-                self._process_dataset(LearningMode.TRAIN)
-                self._process_dataset(LearningMode.VAL)
+            # with self._progress_monitor:  # TODO: re-think what epoch is; upd: it also causes ambuguity when expcetion is raised inside of the context manager
+            self._progress_monitor._enter()
+            self._process_dataset(LearningMode.TRAIN)
+            self._process_dataset(LearningMode.VAL)
+            self._progress_monitor._exit()
             self._progress_monitor.log_updation(UpdationLevel.EPOCH, LearningMode.TRAIN)  # TODO: reduce the length
             self._progress_monitor.log_updation(UpdationLevel.EPOCH, LearningMode.VAL)  # TODO: reduce the length
 

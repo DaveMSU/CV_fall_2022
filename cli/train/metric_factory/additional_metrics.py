@@ -2,7 +2,7 @@ import numpy as np
 import sklearn.metrics
 
 
-def root_mean_squared_error(*args, **kwargs) -> float:
+def root_mean_squared_error(*args, **kwargs) -> np.float64:
     return sklearn.metrics.mean_squared_error(*args, **kwargs) ** 0.5
 
 

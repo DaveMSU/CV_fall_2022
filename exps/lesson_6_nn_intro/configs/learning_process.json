@@ -1,9 +1,4 @@
 {
-    "logger": {
-        "logger_name": "DebugLogger",
-        "logging_file": "/var/lib/storage/resources/cv_fall_2022/lesson_8_detection_metric/experiments/test/stdout.log",
-        "stdout": true
-    },
     "data": {
         "train": {
             "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/welded/train_dataset.test",
@@ -27,7 +22,7 @@
         "optimizer": {
             "type": "SGD",
             "params": {
-                "lr": 3.0
+                "lr": 7.0
             }
         },
         "lr_scheduler": {
@@ -40,10 +35,10 @@
         "total_epoch_amount": 2000
     },
     "device": "cuda:1",
-    "tensorboard_logs": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/test/tensorboard_runs",
+    "tensorboard_logs": "/var/lib/storage/resources/experiments/cv_fall_2022/lesson_6_nn_intro/test/tensorboard_runs",
     "model_dumps": {
-        "best": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/test/best.ckpt",
-        "last": "/var/lib/storage/resources/cv_fall_2022/lesson_6_nn_intro/experiments/test/last.ckpt"
+        "best": "/var/lib/storage/resources/experiments/cv_fall_2022/lesson_6_nn_intro/test/best.ckpt",
+        "last": "/var/lib/storage/resources/experiments/cv_fall_2022/lesson_6_nn_intro/test/last.ckpt"
     },
     "sub_net_outputs_to_visualize": [
         {

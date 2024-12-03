@@ -5,13 +5,6 @@ import typing as tp
 
 
 @dataclasses.dataclass(frozen=True)
-class _LoggerConfig:
-    logger_name: str
-    logging_file: pathlib.Path
-    stdout: bool
-
-
-@dataclasses.dataclass(frozen=True)
 class _DataloaderConfig:  # TODO: add accumulation
     dump_path: pathlib.Path
     batch_size: int
@@ -97,7 +90,6 @@ class ManyMetricsConfig:
 
 @dataclasses.dataclass(frozen=True)
 class LearningConfig:
-    logger: _LoggerConfig
     data: _DataConfig
     continue_from: tp.Optional[pathlib.Path]
     hyper_params: _HyperParamsConfig
@@ -110,11 +102,6 @@ class LearningConfig:
     @classmethod
     def from_dict(cls, d: tp.Dict[str, tp.Any]) -> 'LearningConfig':
         return cls(
-            logger=_LoggerConfig(
-                logger_name=d["logger"]["logger_name"],
-                logging_file=pathlib.Path(d["logger"]["logging_file"]),
-                stdout=d["logger"]["stdout"]
-            ),
             data=_DataConfig(
                 train=_DataloaderConfig(
                     dump_path=pathlib.Path(d["data"]["train"]["dump_path"]),

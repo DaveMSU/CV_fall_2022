@@ -5,26 +5,20 @@ import pathlib, sys; sys.path.append(
 
 import argparse
 import logging  # TODO: move it somewhere deeper
+import os
 
+from cli.tensorboard import tensorboard_add_cmdargs
 from cli.train import train_add_cmdargs
 from cli.weld_dataset import weld_dataset_add_cmdargs
 
 
 _TRACE_LEVEL = 5
-
 logging.addLevelName(_TRACE_LEVEL, "TRACE")
+setattr(logging, "TRACE", _TRACE_LEVEL)
 def _trace(self, message, *args, **kwargs):
     if self.isEnabledFor(_TRACE_LEVEL):
-        self._log(_TRACE_LEVEL, message, *args, **kwargs)
+        self._log(_TRACE_LEVEL, message, args if args else None, **kwargs)
 logging.Logger.trace = _trace
-
-logging.basicConfig(  # TODO: move it somewhere deeper
-    handlers=[
-        logging.StreamHandler(sys.stdout)
-    ],
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
 
 
 def main():
@@ -34,8 +28,9 @@ def main():
     parser.set_defaults(main=(lambda cmdargs: parser.print_help()))
     
     # Add commands.
-    weld_dataset_add_cmdargs(parser, subparsers)
+    tensorboard_add_cmdargs(parser, subparsers)
     train_add_cmdargs(parser, subparsers)
+    weld_dataset_add_cmdargs(parser, subparsers)
 
     cmd_args: argparse.Namespace = parser.parse_args()
 

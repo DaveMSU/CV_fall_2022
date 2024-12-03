@@ -12,12 +12,16 @@ class BaseScikitLearnMetricHandler(abc.ABC):
     def __init__(self, metric_type: str, params: tp.Dict[str, tp.Any]):
         # sel._metric_type = metric_type
         self._params = params
+        self._metric: tp.Callable[
+                [np.ndarray, np.ndarray],  # shapes: (bs,)
+                np.Union[np.float64, float]
+        ]
         try:
             self._metric = getattr(additional_metrics, metric_type)
         except AttributeError:
             self._metric = getattr(sklearn.metrics, metric_type)
-        self._worst_value: float = self._metric([1, 0], [0, 1])
-        self._best_value: float = self._metric([1, 0], [1, 0])
+        self._worst_value = float(self._metric([1, 0], [0, 1]))
+        self._best_value = float(self._metric([1, 0], [1, 0]))
         self._bigger_means_better: bool = self._best_value > self._worst_value
     
     @abc.abstractmethod
@@ -68,13 +72,13 @@ class _DiscreteScikitLearnMetricHandler(BaseScikitLearnMetricHandler):
         if y_true.ndim == 2:
             y_true = y_true.argmax(axis=1)
             y_pred = y_pred.argmax(axis=1)
-        return self._metric(y_true, y_pred, **self._params)
+        return float(self._metric(y_true, y_pred, **self._params))
 
 
 class _ContinuousScikitLearnMetricHandler(BaseScikitLearnMetricHandler):
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         assert y_true.ndim in {1, 2}
-        return self._metric(y_true, y_pred, **self._params)
+        return float(self._metric(y_true, y_pred, **self._params))
 
 
 class MetricFactory:
