@@ -170,7 +170,7 @@ class ProgressMonitor:
                 for name in sub_net_names
             }
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # TODO: fill it
         return (
             f"{self.__class__.__name__}=("
                 f"_last_finished_epoch={self._last_finished_epoch}, "
@@ -218,9 +218,11 @@ class ProgressMonitor:
         self._processing_epoch = None
         self._logger.info(f"epoch `{self._last_finished_epoch}` has finished")
 
-    @property
-    def get_epoch_on_which_best_main_val_metric_value_got(self) -> float:
-        return self._best_main_metric_value
+    def get_running_epoch_loss_value(self, mode: LearningMode) -> float:
+        return self._loss_value[mode].buffer.get_value()
+
+    # def get_epoch_on_which_best_main_val_metric_value_got(self) -> float:
+    #     return self._best_main_metric_value
 
     def log_updation(self, level: UpdationLevel, *args, **kwargs) -> None:
         if level == UpdationLevel.EPOCH:
@@ -238,7 +240,7 @@ class ProgressMonitor:
             X: torch.Tensor,  # ndim = int
             Y: torch.Tensor,  # ndim = int
             Y_pred: torch.Tensor,  # ndim = int (same as Y, even shape is)
-            loss: tp.Any,  # TODO: specify the type
+            loss: torch.Tensor,
             cntx: TrainingContext,
     ) -> None:
         assert X.shape[0] == Y.shape[0]

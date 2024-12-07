@@ -21,17 +21,18 @@
         "optimizer": {
             "type": "SGD",
             "params": {
-                "lr": 7.0
+                "lr": 10.0
             }
         },
         "lr_scheduler": {
-            "use_after": "epoch",
-            "type": "LambdaLR",
+            "use_after": "gradient_step",
+            "type": "CosineAnnealingWarmRestarts",
             "params": {
-                "lr_lambda": "lambda step: 1.0"
+                "T_0": 45,
+                "T_mult": 2
             }
         },
-        "total_epoch_amount": 1000
+        "total_epoch_amount": 2000
     },
     "device": "cuda:0",
     "tensorboard_logs": "/var/lib/storage/resources/experiments/cv_fall_2022/lesson_6_nn_intro/test/tensorboard_runs",

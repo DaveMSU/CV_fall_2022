@@ -2,7 +2,7 @@
     "data": {
         "train": {
             "dump_path": "/var/lib/storage/data/benchmarks/computer_vision/mnist/welded/train_dataset.test",
-            "batch_size": 1024,
+            "batch_size": 4096,
             "shuffle": true,
             "drop_last": true
         },
@@ -21,14 +21,19 @@
         "optimizer": {
             "type": "SGD",
             "params": {
-                "lr": 0.01
+                "lr": 1.0
             }
         },
         "lr_scheduler": {
             "use_after": "epoch",
-            "type": "LambdaLR",
+            "type": "CyclicLR",
             "params": {
-                "lr_lambda": "lambda step: 1.0"
+                "base_lr": 0.0001,
+                "max_lr": 0.8,
+                "mode": "triangular",
+                "step_size_up": 10,
+                "step_size_down": 10,
+                "cycle_momentum": false
             }
         },
         "total_epoch_amount": 1000

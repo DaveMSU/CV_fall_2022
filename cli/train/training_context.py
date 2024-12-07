@@ -5,12 +5,37 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from .dataset import HDF5Dataset
-from .learning_config import LearningConfig
+from .learning_config import LearningConfig, UpdationLevel
 from .net_factory import NetFactory
 from lib import (
     LearningMode,
     wrap_in_logger,
 )
+
+
+class _LRSchedulerWrapper:
+    def __init__(
+            self,
+            lr_scheduler: torch.optim.lr_scheduler._LRScheduler,
+            *,
+            react_only_on: UpdationLevel
+    ):
+        self._lr_scheduler = lr_scheduler
+        self._updation_level_to_react_on = react_only_on
+
+    def step(
+            self,
+            updation_level: UpdationLevel,
+            loss_value: float,
+            mode: LearningMode
+    ) -> None:
+        if updation_level == self._updation_level_to_react_on:
+            if type(self._lr_scheduler) is torch.optim.lr_scheduler.ReduceLROnPlateau:  # noqa
+                if mode == LearningMode.VAL:
+                    self._lr_scheduler.step(loss_value)
+            else:
+                if mode == LearningMode.TRAIN:
+                    self._lr_scheduler.step()
 
 
 class TrainingContext:  # TODO: deal with _attrs
@@ -69,8 +94,8 @@ class TrainingContext:  # TODO: deal with _attrs
 
     @property
     @wrap_in_logger(level="debug", ignore_args=(0,))
-    def lr_scheduler(self) -> torch.optim.lr_scheduler.LRScheduler:
-        return self._lr_scheduler
+    def lr_scheduler(self) -> _LRSchedulerWrapper:
+        return self._lr_scheduler_wrapper
 
     @property
     @wrap_in_logger(level="debug", ignore_args=(0,))
@@ -159,6 +184,10 @@ class TrainingContext:  # TODO: deal with _attrs
                 "optimizer": self._optimizer,
                 **learning_config.hyper_params.lr_scheduler.params
             }
+        )
+        self._lr_scheduler_wrapper = _LRSchedulerWrapper(
+            self._lr_scheduler,
+            react_only_on=learning_config.hyper_params.lr_scheduler.use_after
         )
         if (tea := learning_config.hyper_params.total_epoch_amount) < 0:
             raise ValueError(

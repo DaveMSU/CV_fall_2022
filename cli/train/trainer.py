@@ -66,11 +66,17 @@ class Trainer:  # TODO: make it a singleton
         for X, Y in self._cntx.dataloaders[mode]:
             if mode == LearningMode.TRAIN:
                 self._cntx.optimizer.zero_grad()
-            self._process_batch(X, Y, mode)
+            batch_loss = self._process_batch(X, Y, mode)
             if mode == LearningMode.TRAIN:
                 self._cntx.optimizer.step()
                 self._cntx.optimizer.zero_grad()
+            self._cntx.lr_scheduler.step(UpdationLevel.GSTEP, batch_loss, mode)  # noqa
             self._progress_monitor.log_updation(UpdationLevel.GSTEP, mode)  # TODO: may be it should be moved after GA maintainance
+        self._cntx.lr_scheduler.step(
+            UpdationLevel.EPOCH,
+            self._progress_monitor.get_running_epoch_loss_value(mode),
+            mode
+        )
 
     @wrap_in_logger(level="debug", ignore_args=(0,))
     def _process_batch(
@@ -79,7 +85,7 @@ class Trainer:  # TODO: make it a singleton
             Y: torch.Tensor,
             /,
             mode: LearningMode
-    ) -> None:
+    ) -> float:
         X = X.to(self._cntx.device)
         Y = Y.to(self._cntx.device)
         Y_pred = self._cntx.net(X)
@@ -89,3 +95,4 @@ class Trainer:  # TODO: make it a singleton
         self._progress_monitor.record_batch_processing(
             mode, X, Y, Y_pred, loss_value, self._cntx
         )
+        return loss_value.cpu().item()
