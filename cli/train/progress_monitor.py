@@ -9,6 +9,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from .learning_config import UpdationLevel
 from .metric_factory import MetricHandlerContainer, MetricValueContainer
+from .training_context import TrainingContext
 from lib import (
     LearningMode,
     wrap_in_logger,
@@ -111,6 +112,7 @@ class _BatchStatsRecord:  # TODO: looks like it should be rewritten before GA
     X_shape: tp.Tuple[int, ...]  # TODO: may be remove this?
     Y_shape: tp.Tuple[int, ...]  # TODO: may be remove this?
     loss_value: float
+    lr: float
     grads: tp.Dict[str, tp.Optional[np.ndarray]]  # sub_ner_name to (int,) shaped np.array
     metrics: MetricValueContainer
 
@@ -143,6 +145,10 @@ class ProgressMonitor:
                 LearningMode,
                 _FloatRunningMeanContainer
         ] = dict()
+        self._lr: tp.Dict[
+                LearningMode,
+                _FloatRunningMeanContainer
+        ] = dict()
         self._metric_values: tp.Dict[
                 LearningMode,
                 tp.Dict[str, _FloatRunningMeanContainer]
@@ -154,6 +160,7 @@ class ProgressMonitor:
         for mode in LearningMode:
             self._last_batch_stats[mode] = None
             self._loss_value[mode] = _FloatRunningMeanContainer()
+            self._lr[mode] = _FloatRunningMeanContainer()
             self._metric_values[mode] = {
                 name: _FloatRunningMeanContainer()
                 for name in metrics.all
@@ -188,6 +195,7 @@ class ProgressMonitor:
         assert type(self._processing_epoch) is int
         for mode in LearningMode:
             self._loss_value[mode].flush()
+            self._lr[mode].flush()
             for metric_name in self._metric_values[mode]:
                 self._metric_values[mode][metric_name].flush()
             for sub_net_name in self._grads[mode]:
@@ -231,7 +239,7 @@ class ProgressMonitor:
             Y: torch.Tensor,  # ndim = int
             Y_pred: torch.Tensor,  # ndim = int (same as Y, even shape is)
             loss: tp.Any,  # TODO: specify the type
-            net: torch.nn.Module,  # TODO: may be specify better?
+            cntx: TrainingContext,
     ) -> None:
         assert X.shape[0] == Y.shape[0]
         assert type(self._processing_epoch) == int
@@ -243,13 +251,15 @@ class ProgressMonitor:
             Y_shape=Y.shape,
             size=X.shape[0],
             loss_value=loss.cpu().item(),
-            grads=self._get_grads(net),
+            lr=cntx.optimizer.param_groups[-1]["lr"],
+            grads=self._get_grads(cntx.net),
             metrics=self._metrics(
                 Y.cpu().detach().numpy(),
                 Y_pred.cpu().detach().numpy()
             )
         )
         self._loss_value[mode].buffer.add(_stats.loss_value, n=_stats.size)
+        self._lr[mode].buffer.add(_stats.lr, n=_stats.size)
         for name, value in _stats.metrics.all.items():
             assert value is not None
             self._metric_values[mode][name].buffer.add(value, n=_stats.size)
@@ -260,12 +270,6 @@ class ProgressMonitor:
 
     def _log_epoch(self, mode: LearningMode) -> None:
         self._logger.info(f"`{mode.value}` epoch stats:")
-        self._logger.info(f"loss - {self._loss_value[mode].value}")
-        self._tb_writer.add_scalar(
-            f"loss-{mode.value}/epoch",
-            self._loss_value[mode].value,
-            self._last_finished_epoch
-        )
         for sub_net_name, gradient_container in self._grads[mode].items():
             if gradient_container.value is not None:
                 _norm: float = (gradient_container.value ** 2).sum() ** 0.5
@@ -275,6 +279,18 @@ class ProgressMonitor:
                     {sub_net_name: _norm},
                     self._last_finished_epoch
                 )
+        self._logger.info(f"lr - {self._lr[mode].value}")
+        self._tb_writer.add_scalar(
+            f"lr-{mode.value}/epoch",
+            self._lr[mode].value,
+            self._last_finished_epoch
+        )
+        self._logger.info(f"loss - {self._loss_value[mode].value}")
+        self._tb_writer.add_scalar(
+            f"loss-{mode.value}/epoch",
+            self._loss_value[mode].value,
+            self._last_finished_epoch
+        )
         for name, container in self._metric_values[mode].items():
             _msg = f"metric - {name} - {container.value}"
             if self._metrics.main_metric_name == name:
@@ -291,14 +307,6 @@ class ProgressMonitor:
             f"`{mode.value}` batch stats "
             f"({self._last_batch_stats[mode].number}-th):"
         )
-        self._logger.info(
-            f"loss - {self._last_batch_stats[mode].loss_value}"
-        )
-        self._tb_writer.add_scalar(
-            f"loss-{mode.value}/step",
-            self._last_batch_stats[mode].loss_value,
-            self._last_batch_stats[mode].number
-        )
         self._logger.info(f"size - {self._last_batch_stats[mode].size}")
         for sub_net_name, vec in self._last_batch_stats[mode].grads.items():  # TODO: reduce the length
             if vec is not None:
@@ -309,6 +317,20 @@ class ProgressMonitor:
                     {sub_net_name: _norm},
                     self._last_batch_stats[mode].number
                 )
+        self._logger.info(f"lr - {self._last_batch_stats[mode].lr}")
+        self._tb_writer.add_scalar(
+            f"lr-{mode.value}/step",
+            self._last_batch_stats[mode].lr,
+            self._last_batch_stats[mode].number
+        )
+        self._logger.info(
+            f"loss - {self._last_batch_stats[mode].loss_value}"
+        )
+        self._tb_writer.add_scalar(
+            f"loss-{mode.value}/step",
+            self._last_batch_stats[mode].loss_value,
+            self._last_batch_stats[mode].number
+        )
         for name, value in self._last_batch_stats[mode].metrics.all.items():
             _msg = f"metric - {name} - {value}"
             if self._metrics.main_metric_name == name:
