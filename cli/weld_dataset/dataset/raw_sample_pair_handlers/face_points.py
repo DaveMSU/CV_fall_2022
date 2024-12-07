@@ -52,7 +52,7 @@ class FaceAndPoints(BaseRawModelInputOutputPairSample):
     ) -> 'BaseRawModelInputOutputPairSample':
         with open(output_path, "r") as f:
             raw_points: tp.Dict[str, float] = json.load(f)
-        instanse = cls(
+        return cls(
             input=Image.open(input_path).convert('RGB'),
             output=cls.Points(**raw_points)
         )

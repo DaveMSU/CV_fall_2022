@@ -13,7 +13,6 @@
             "drop_last": true
         }
     },
-    "continue_from": null,
     "hyper_params": {
         "loss": {
             "type": "MSELoss",
@@ -32,14 +31,11 @@
                 "lr_lambda": "lambda step: 1.0"
             }
         },
-        "total_epoch_amount": 2000
+        "total_epoch_amount": 1000
     },
-    "device": "cuda:1",
+    "device": "cuda:0",
     "tensorboard_logs": "/var/lib/storage/resources/experiments/cv_fall_2022/lesson_6_nn_intro/test/tensorboard_runs",
-    "model_dumps": {
-        "best": "/var/lib/storage/resources/experiments/cv_fall_2022/lesson_6_nn_intro/test/best.ckpt",
-        "last": "/var/lib/storage/resources/experiments/cv_fall_2022/lesson_6_nn_intro/test/last.ckpt"
-    },
+    "checkpoint_dir": "/var/lib/storage/resources/experiments/cv_fall_2022/lesson_6_nn_intro/test/checkpoints",
     "sub_net_outputs_to_visualize": [
         {
             "sub_net_name": "backbone",

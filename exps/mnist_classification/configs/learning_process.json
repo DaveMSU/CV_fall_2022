@@ -1,9 +1,4 @@
 {
-    "logger": {
-        "logger_name": "DebugLogger",
-        "logging_file": "/var/lib/storage/resources/dev_null/stdout.log",
-        "stdout": true
-    },
     "data": {
         "train": {
             "dump_path": "/var/lib/storage/data/benchmarks/computer_vision/mnist/welded/train_dataset.test",
@@ -18,7 +13,6 @@
             "drop_last": true
         }
     },
-    "continue_from": null,
     "hyper_params": {
         "loss": {
             "type": "CrossEntropyLoss",
@@ -27,7 +21,7 @@
         "optimizer": {
             "type": "SGD",
             "params": {
-                "lr": 0.05
+                "lr": 0.01
             }
         },
         "lr_scheduler": {
@@ -37,14 +31,11 @@
                 "lr_lambda": "lambda step: 1.0"
             }
         },
-        "total_epoch_amount": 2000
+        "total_epoch_amount": 1000
     },
     "device": "cuda:1",
-    "tensorboard_logs": "/var/lib/storage/resources/dev_null/tensorboard_runs",
-    "model_dumps": {
-        "best": "/var/lib/storage/resources/dev_null/best.ckpt",
-        "last": "/var/lib/storage/resources/dev_null/last.ckpt"
-    },
+    "tensorboard_logs": "/var/lib/storage/resources/experiments/other/mnist/test/tensorboard_runs",
+    "checkpoint_dir": "/var/lib/storage/resources/experiments/other/mnist/test/checkpoints",
     "sub_net_outputs_to_visualize": [
         {
             "sub_net_name": "backbone",
@@ -59,6 +50,61 @@
                 "name": "accuracy",
                 "function": "accuracy_score",
                 "params": {}
+            },
+            {
+                "name": "balanced_accuracy",
+                "function": "balanced_accuracy_score",
+                "params": {}
+            },
+            {
+                "name": "f1_score_macro",
+                "function": "f1_score",
+                "params": {
+                    "average": "macro",
+                    "labels": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    "zero_division": 0
+                }
+            },
+            {
+                "name": "precision_macro",
+                "function": "precision_score",
+                "params": {
+                    "average": "macro",
+                    "labels": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    "zero_division": 0
+                }
+            },
+            {
+                "name": "recall_macro",
+                "function": "recall_score",
+                "params": {
+                    "average": "macro",
+                    "labels": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    "zero_division": 0
+                }
+            },
+            {
+                "name": "roc_auc_macro",
+                "function": "roc_auc_score",
+                "params": {
+                    "average": "macro",
+                    "multi_class": "ovo",
+                    "labels": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                }
+            },
+            {
+                "name": "log_loss_NORMED",
+                "function": "log_loss",
+                "params": {
+                    "normalize": true
+                }
+            },
+            {
+                "name": "log_loss",
+                "function": "log_loss",
+                "params": {
+                    "normalize": false
+                }
             }
         ]
     }

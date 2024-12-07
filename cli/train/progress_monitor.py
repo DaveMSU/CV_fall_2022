@@ -115,6 +115,12 @@ class _BatchStatsRecord:  # TODO: looks like it should be rewritten before GA
     metrics: MetricValueContainer
 
 
+@dataclasses.dataclass(frozen=True)
+class _BestMoment:
+    value: float
+    epoch: int
+
+
 class ProgressMonitor:
     def __init__(
             self,
@@ -124,6 +130,7 @@ class ProgressMonitor:
     ):
         self._logger = logging.getLogger(self.__class__.__name__)
         self._metrics = metrics
+        self.best_moment: tp.Optional[_BestMoment] = None
         self._tb_writer = tensorboard_writer
         self._last_finished_epoch: tp.Optional[int] = None
         self._processing_epoch: tp.Optional[int] = None
@@ -185,11 +192,27 @@ class ProgressMonitor:
                 self._metric_values[mode][metric_name].flush()
             for sub_net_name in self._grads[mode]:
                 self._grads[mode][sub_net_name].flush()
+        if (
+                self.best_moment is None
+        ) or (
+                self._metrics.all[self._metrics.main_metric_name].is_first_better_than_second(  # noqa
+                    self._metric_values[LearningMode.VAL][self._metrics.main_metric_name].value,  # noqa
+                    self.best_moment.value
+                )
+        ):
+            self.best_moment: _BestMoment = _BestMoment(
+                value=self._metric_values[LearningMode.VAL][self._metrics.main_metric_name].value,  # noqa
+                epoch=self._processing_epoch
+            )
         if self._last_finished_epoch is None:
             self._last_finished_epoch: int
         self._last_finished_epoch = self._processing_epoch
         self._processing_epoch = None
         self._logger.info(f"epoch `{self._last_finished_epoch}` has finished")
+
+    @property
+    def get_epoch_on_which_best_main_val_metric_value_got(self) -> float:
+        return self._best_main_metric_value
 
     def log_updation(self, level: UpdationLevel, *args, **kwargs) -> None:
         if level == UpdationLevel.EPOCH:

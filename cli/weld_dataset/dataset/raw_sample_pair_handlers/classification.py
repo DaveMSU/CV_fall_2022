@@ -11,7 +11,7 @@ from .base import BaseRawModelInputOutputPairSample
 from lib import ModelInputOutputPairSample
 
 
-class ImageAndLabel(BaseRawModelInputOutputPairSample):
+class ImageAndLabel(BaseRawModelInputOutputPairSample):  # TODO: use meta-class?
     @classmethod
     def create_instance(
             cls,
@@ -27,10 +27,12 @@ class ImageAndLabel(BaseRawModelInputOutputPairSample):
         )
 
     def weld_itself(self) -> ModelInputOutputPairSample:
-        assert type(self.output) == int
+        assert type(self.output) is np.ndarray, type(self.output)
+        assert (self.output.ndim == 1) and (self.output.shape[0] > 1)
+        assert self.output.dtype == np.float32
         return ModelInputOutputPairSample(
             torch.from_numpy(
                 np.array(self.input).astype(np.float32).transpose(2, 0, 1)
             ) / 255.,
-            torch.Tensor([self.output]).squeeze().long()  # TODO: is this the right shape?
+            torch.from_numpy(self.output)  # TODO: is this the right shape?
         )

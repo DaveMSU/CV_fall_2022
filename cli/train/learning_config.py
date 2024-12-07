@@ -63,12 +63,6 @@ class _HyperParamsConfig:
 
 
 @dataclasses.dataclass(frozen=True)
-class _ModelDumpsConfig:
-    best: pathlib.Path
-    last: pathlib.Path
-
-
-@dataclasses.dataclass(frozen=True)
 class _SubNetOutputConfig:
     sub_net_name: str
     number_of_vectors: int
@@ -91,11 +85,10 @@ class ManyMetricsConfig:
 @dataclasses.dataclass(frozen=True)
 class LearningConfig:
     data: _DataConfig
-    continue_from: tp.Optional[pathlib.Path]
     hyper_params: _HyperParamsConfig
     device: str  # f.e.: "cuda:{i}"
-    tensorboard_logs: pathlib.Path
-    model_dumps: _ModelDumpsConfig
+    tensorboard_logs: pathlib.PosixPath
+    checkpoint_dir: pathlib.PosixPath
     sub_net_outputs_to_visualize: tp.List[_SubNetOutputConfig]
     metrics: ManyMetricsConfig
 
@@ -114,7 +107,6 @@ class LearningConfig:
                     shuffle=d["data"]["val"]["shuffle"]
                 )
             ),
-            continue_from=d["continue_from"],
             hyper_params=_HyperParamsConfig(
                 loss=_LossConfig(
                     type=d["hyper_params"]["loss"]["type"],
@@ -143,10 +135,7 @@ class LearningConfig:
             ),
             device=d["device"],
             tensorboard_logs=pathlib.Path(d["tensorboard_logs"]),
-            model_dumps=_ModelDumpsConfig(
-                best=pathlib.Path(d["model_dumps"]["best"]),
-                last=pathlib.Path(d["model_dumps"]["last"])
-            ),
+            checkpoint_dir=pathlib.Path(d["checkpoint_dir"]),
             sub_net_outputs_to_visualize=[
                 _SubNetOutputConfig(
                     sub_net_name=sub_d["sub_net_name"],

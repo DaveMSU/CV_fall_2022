@@ -6,9 +6,11 @@ import sklearn.metrics
 
 from . import additional_metrics
 from ..learning_config import OneMetricConfig
+from lib import wrap_in_logger
 
 
 class BaseScikitLearnMetricHandler(abc.ABC):
+    @wrap_in_logger(level="trace", ignore_args=(0,))
     def __init__(self, metric_type: str, params: tp.Dict[str, tp.Any]):
         # sel._metric_type = metric_type
         self._params = params
@@ -48,13 +50,16 @@ class BaseScikitLearnMetricHandler(abc.ABC):
     #     return self._metric_type
 
     @property
+    @wrap_in_logger(level="trace", ignore_args=(0,))
     def best_value(self) -> float:
         return self._worst_value
 
     @property
+    @wrap_in_logger(level="trace", ignore_args=(0,))
     def worst_value(self) -> float:
         return self._worst_value
 
+    @wrap_in_logger(level="trace", ignore_args=(0,))
     def is_first_better_than_second(
             self,
             /,
@@ -66,6 +71,7 @@ class BaseScikitLearnMetricHandler(abc.ABC):
 
 
 class _DiscreteScikitLearnMetricHandler(BaseScikitLearnMetricHandler):
+    @wrap_in_logger(level="debug", ignore_args=(0,))
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         assert y_true.shape == y_pred.shape
         assert y_true.ndim in {1, 2}
@@ -76,6 +82,7 @@ class _DiscreteScikitLearnMetricHandler(BaseScikitLearnMetricHandler):
 
 
 class _ContinuousScikitLearnMetricHandler(BaseScikitLearnMetricHandler):
+    @wrap_in_logger(level="debug", ignore_args=(0,))
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         assert y_true.ndim in {1, 2}
         return float(self._metric(y_true, y_pred, **self._params))
@@ -94,12 +101,14 @@ class MetricFactory:
     ]
     _names_of_discrete_metrics = [
         "accuracy_score",
+        "balanced_accuracy_score",
         "f1_score",
         "precision_score",
         "recall_score"
     ]
 
     @classmethod
+    @wrap_in_logger(level="debug")
     def create_metric(
             cls,
             config: OneMetricConfig

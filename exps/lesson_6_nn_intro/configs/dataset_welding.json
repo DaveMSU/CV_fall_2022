@@ -1,36 +1,48 @@
 {
     "datasets": [
         {
-            "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/welded/val_dataset.test",
-            "params": {
-                "raw_x_to_raw_y_mapper": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/raw/train/mapper.csv",
-                "inclusion_condition": "lambda pair: hash(pair.x.name) % 10 == 0",
-                "raw_model_input_output_pair_sample_type": "FaceAndPoints",
-                "transforms": [
-                    {
-                        "type": "FaceAndPointsResize",
-                        "params": {
-                            "size": [64, 64]
-                        }
+            "raw_x_to_raw_y_mapper": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/raw/train/mapper.csv",
+            "inclusion_condition": "lambda pair: hash(pair.x.name) % 10 == 0",
+            "raw_model_input_output_pair_sample_type": "FaceAndPoints",
+            "transforms": [
+                {
+                    "type": "FaceAndPointsResize",
+                    "params": {
+                        "size": [64, 64]
                     }
-                ]
-            }
+                },
+                {
+                    "type": "FaceAndPointsMakeAbsolutePointCoordsRelative",
+                    "params": {}
+                }
+            ],
+            "repeat_number": 1,
+            "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/welded/val_dataset.test"
         },
         {
-            "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/welded/train_dataset.test",
-            "params": {
-                "raw_x_to_raw_y_mapper": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/raw/train/mapper.csv",
-                "inclusion_condition": "lambda pair: hash(pair.x.name) % 10 > 0",
-                "raw_model_input_output_pair_sample_type": "FaceAndPoints",
-                "transforms": [
-                    {
-                        "type": "FaceAndPointsResize",
-                        "params": {
-                            "size": [64, 64]
-                        }
+            "raw_x_to_raw_y_mapper": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/raw/train/mapper.csv",
+            "inclusion_condition": "lambda pair: hash(pair.x.name) % 10 > 0",
+            "raw_model_input_output_pair_sample_type": "FaceAndPoints",
+            "transforms": [
+                {
+                    "type": "FaceAndPointsResize",
+                    "params": {
+                        "size": [64, 64]
                     }
-                ]
-            }
+                },
+                {
+                    "type": "FaceAndPointsHorizontalRandomFlip",
+                    "params": {
+                        "probability": 0.5
+                    }
+                },
+                {
+                    "type": "FaceAndPointsMakeAbsolutePointCoordsRelative",
+                    "params": {}
+                }
+            ],
+            "repeat_number": 4,
+            "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/welded/train_dataset.test"
         }
     ]
 }

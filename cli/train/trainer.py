@@ -1,3 +1,4 @@
+import pathlib
 import typing as tp
 
 import torch
@@ -26,7 +27,7 @@ class TrainingContext:  # TODO: deal with _attrs
         self._init_device(learning_config)
         self._init_net(net_arch_config)
         self._init_hyper_params(learning_config)
-        self._init_monitorings(learning_config)
+        self._init_checkpoint_settings(learning_config)
 
     def __repr__(self) -> str:
         return (
@@ -83,6 +84,31 @@ class TrainingContext:  # TODO: deal with _attrs
     @wrap_in_logger(level="debug", ignore_args=(0,))  # TODO: may be 'trace'?
     def writer(self) -> SummaryWriter:
         return self._writer
+
+    @property
+    @wrap_in_logger(level="debug", ignore_args=(0,))  # TODO: may be 'trace'?
+    def checkpoint_dir(self) -> pathlib.PosixPath:
+        return self._checkpoint_dir
+
+    @wrap_in_logger(level="debug", ignore_args=(0,))
+    def save_checkpoint(self, basename: str) -> None:
+        torch.save(
+            {
+                "model_state_dict": self._net.state_dict(),
+                "optimizer_state_dict": self._optimizer.state_dict(),
+                "loss_state_dict": self._loss.state_dict(),
+                "lr_scheduler_state_dict": self._lr_scheduler.state_dict(),
+                "device": self._device,
+            },
+            self._checkpoint_dir / f"{basename}.pth"
+        )
+
+    def load_checkpoint(self, path: pathlib.PosixPath) -> None:
+        checkpoint = torch.load(path, map_location=self._device)
+        for attr in ["net", "optimizer", "loss", "lr_scheduler"]:
+            getattr(self, f"_{attr}").load_state_dict(
+                checkpoint[f"{attr}_state_dict"]
+            )
 
     @wrap_in_logger(level="debug", ignore_args=(0,))
     def _init_dataloaders(self, learning_config: LearningConfig) -> None:
@@ -145,10 +171,12 @@ class TrainingContext:  # TODO: deal with _attrs
             self._total_epoch_amount: int = tea
 
     @wrap_in_logger(level="debug", ignore_args=(0,))  # TODO: rm next lines
-    def _init_monitorings(self, learning_config: LearningConfig) -> None:
-        pass
-        # self._writer = SummaryWriter(learning_config.tensorboard_logs)  # TODO: move and this behivour to PMonitor
-        # self._metrics = MetricContainer.from_config(learning_config.metrics)
+    def _init_checkpoint_settings(
+            self,
+            learning_config: LearningConfig
+    ) -> None:
+        learning_config.checkpoint_dir.mkdir(parents=False, exist_ok=True)
+        self._checkpoint_dir = learning_config.checkpoint_dir
 
 
 class Trainer:  # TODO: make it a singleton
@@ -188,6 +216,9 @@ class Trainer:  # TODO: make it a singleton
             self._progress_monitor._exit()
             self._progress_monitor.log_updation(UpdationLevel.EPOCH, LearningMode.TRAIN)  # TODO: reduce the length
             self._progress_monitor.log_updation(UpdationLevel.EPOCH, LearningMode.VAL)  # TODO: reduce the length
+            if self._progress_monitor.best_moment.epoch == epoch:
+                self._cntx.save_checkpoint("best")
+            self._cntx.save_checkpoint("last")
 
     @wrap_in_logger(level="debug", ignore_args=(0,))
     def _process_dataset(self, mode: LearningMode) -> None:
@@ -218,7 +249,6 @@ class Trainer:  # TODO: make it a singleton
         loss_value = self._cntx.loss(Y_pred, Y)
         if mode == LearningMode.TRAIN:
             loss_value.backward()
-
         self._progress_monitor.record_batch_processing(
             mode, X, Y, Y_pred, loss_value, self._cntx.net
         )

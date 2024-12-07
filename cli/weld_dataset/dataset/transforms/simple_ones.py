@@ -1,5 +1,7 @@
 import typing as tp
 
+import numpy as np
+
 from .. import raw_sample_pair_handlers
 
 
@@ -18,3 +20,17 @@ class ModelOutputStrToIntMapper:
             )
         else:
             sample.output = self._mapper[sample.output]
+
+
+class ModelOutputIntToOneHotMaker:
+    def __init__(self, amount_of_classes: int):
+        assert amount_of_classes >= 2
+        self._amount_of_classes = amount_of_classes
+
+    def __call__(
+            self,
+            sample: raw_sample_pair_handlers.BaseRawModelInputOutputPairSample
+    ) -> None:
+        one_hot = np.zeros(self._amount_of_classes, dtype=np.float32)
+        one_hot[sample.output] = 1.0
+        sample.output = one_hot
