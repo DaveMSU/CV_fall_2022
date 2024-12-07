@@ -42,7 +42,7 @@ class UpdationLevel(enum.Enum):
         elif s == "gradient_step":
             return cls.GSTEP
         else:
-            ValueError(
+            raise ValueError(
                 f"enum.Enum type UpdationLevel doesn't maintain `{s}` entity."
             )
 
@@ -86,7 +86,7 @@ class ManyMetricsConfig:
 class LearningConfig:
     data: _DataConfig
     hyper_params: _HyperParamsConfig
-    device: str  # f.e.: "cuda:{i}"
+    device: str  # f.e.: "cuda:0"
     tensorboard_logs: pathlib.PosixPath
     checkpoint_dir: pathlib.PosixPath
     sub_net_outputs_to_visualize: tp.List[_SubNetOutputConfig]
