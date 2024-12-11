@@ -23,6 +23,7 @@ class _LRSchedulerWrapper:
         self._lr_scheduler = lr_scheduler
         self._updation_level_to_react_on = react_only_on
 
+    @wrap_in_logger(level="debug", ignore_args=(0,))
     def step(
             self,
             updation_level: UpdationLevel,
@@ -147,7 +148,8 @@ class TrainingContext:  # TODO: deal with _attrs
                     learning_config.data,
                     mode.value
                 ).batch_size,
-                shuffle=getattr(learning_config.data, mode.value).shuffle
+                shuffle=getattr(learning_config.data, mode.value).shuffle,
+                drop_last=getattr(learning_config.data, mode.value).drop_last
             )
 
     @wrap_in_logger(level="debug", ignore_args=(0,))

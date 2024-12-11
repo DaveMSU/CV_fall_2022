@@ -2,15 +2,15 @@
     "data": {
         "train": {
             "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/welded/train_dataset.test",
-            "batch_size": 512,
+            "batch_size": 128,
             "shuffle": true,
             "drop_last": true
         },
         "val": {
             "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/welded/val_dataset.test",
-            "batch_size": 1000,
+            "batch_size": 64,
             "shuffle": false,
-            "drop_last": true
+            "drop_last": false
         }
     },
     "hyper_params": {
@@ -50,22 +50,54 @@
             {
                 "name": "mse",
                 "function": "mean_squared_error",
-                "params": {}
+                "params": {},
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "Identical",
+                    "params": {}
+                }
             },
             {
                 "name": "mae",
                 "function": "mean_absolute_error",
-                "params": {}
+                "params": {},
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "Identical",
+                    "params": {}
+                }
             },
             {
                 "name": "mape",
                 "function": "mean_absolute_percentage_error",
-                "params": {}
+                "params": {},
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "Identical",
+                    "params": {}
+                }
             },
             {
                 "name": "rmse",
                 "function": "root_mean_squared_error",
-                "params": {}
+                "params": {},
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "Identical",
+                    "params": {}
+                }
             }
         ]
     }

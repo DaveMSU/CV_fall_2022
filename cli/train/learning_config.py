@@ -9,6 +9,7 @@ class _DataloaderConfig:  # TODO: add accumulation
     dump_path: pathlib.Path
     batch_size: int
     shuffle: bool
+    drop_last: bool
 
 
 @dataclasses.dataclass(frozen=True)
@@ -70,10 +71,28 @@ class _SubNetOutputConfig:
 
 
 @dataclasses.dataclass(frozen=True)
+class _TransformOfY:
+    type: str
+    params: tp.Dict[str, tp.Any]  # kwargs
+
+
+@dataclasses.dataclass(frozen=True)
 class OneMetricConfig:
     name: str
     function: str
     params: tp.Dict[str, tp.Any]  # kwargs
+    target_transform: tp.Optional[_TransformOfY]
+    prediction_transform: tp.Optional[_TransformOfY]
+
+    @classmethod
+    def from_dict(cls, d: tp.Dict[str, tp.Any]) -> 'OneMetricConfig':
+        return cls(
+            name=d["name"],
+            function=d["function"],
+            params=d["params"],
+            target_transform=_TransformOfY(**d["target_transform"]),
+            prediction_transform=_TransformOfY(**d["prediction_transform"])
+        )
 
 
 @dataclasses.dataclass(frozen=True)
@@ -99,12 +118,14 @@ class LearningConfig:
                 train=_DataloaderConfig(
                     dump_path=pathlib.Path(d["data"]["train"]["dump_path"]),
                     batch_size=d["data"]["train"]["batch_size"],
-                    shuffle=d["data"]["train"]["shuffle"]
+                    shuffle=d["data"]["train"]["shuffle"],
+                    drop_last=d["data"]["train"]["drop_last"]
                 ),
                 val=_DataloaderConfig(
                     dump_path=pathlib.Path(d["data"]["val"]["dump_path"]),
                     batch_size=d["data"]["val"]["batch_size"],
-                    shuffle=d["data"]["val"]["shuffle"]
+                    shuffle=d["data"]["val"]["shuffle"],
+                    drop_last=d["data"]["val"]["drop_last"]
                 )
             ),
             hyper_params=_HyperParamsConfig(
@@ -145,8 +166,6 @@ class LearningConfig:
             ],
             metrics=ManyMetricsConfig(
                 main=d["metrics"]["main"],
-                all=[
-                    OneMetricConfig(**sub_d) for sub_d in d["metrics"]["all"]
-                ]
+                all=list(map(OneMetricConfig.from_dict, d["metrics"]["all"]))
             )
         )

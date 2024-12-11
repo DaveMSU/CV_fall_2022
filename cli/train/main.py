@@ -3,6 +3,8 @@ import json
 import logging
 import sys
 
+from numpy import seterr
+
 from .learning_config import LearningConfig
 from .trainer import Trainer
 
@@ -66,6 +68,8 @@ def train_main(cmd_args: argparse.Namespace) -> None:
         level=getattr(logging, cmd_args.log_level),
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
+    if cmd_args.log_level == "INFO":
+        seterr(divide='ignore', invalid='ignore')
 
     with open(cmd_args.architecture_config, "r") as af,\
             open(cmd_args.learning_config, "r") as lf:

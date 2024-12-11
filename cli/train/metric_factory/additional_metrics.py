@@ -1,3 +1,6 @@
+import typing as tp
+from collections.abc import Sequence
+
 import numpy as np
 import sklearn.metrics
 
@@ -6,11 +9,22 @@ def root_mean_squared_error(*args, **kwargs) -> np.float64:
     return sklearn.metrics.mean_squared_error(*args, **kwargs) ** 0.5
 
 
+def entropy(
+        y_true: Sequence[tp.Union[int, float]],
+        y_pred: Sequence[tp.Union[int, float]]
+) -> float:
+    y_pred = np.asarray(y_pred)
+    return -(y_pred * np.log(y_pred)).sum() / y_pred.shape[0]
+
+
 def log_loss_dev_by_10(*args, **kwargs) -> float:
     return sklearn.metrics.log_loss(*args, **kwargs) / 10.
 
 
-def log_loss_diff(y_true: np.array, y_pred: np.array) -> float:
+def log_loss_diff(
+        y_true: Sequence[tp.Union[int, float]],
+        y_pred: Sequence[tp.Union[int, float]]
+) -> float:
     y_true, y_pred = np.asarray(y_true), np.asarray(y_pred)
     best_const: np.array
     if y_true.ndim == 1:

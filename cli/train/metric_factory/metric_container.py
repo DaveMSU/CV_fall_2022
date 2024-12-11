@@ -5,8 +5,9 @@ from collections import OrderedDict
 
 import numpy as np
 
-from .metric_factory import BaseScikitLearnMetricHandler, MetricFactory
+from .metric_factory import ScikitLearnMetricHandler
 from ..learning_config import ManyMetricsConfig
+from lib import wrap_in_logger
 
 
 @dataclasses.dataclass(frozen=True)
@@ -18,19 +19,14 @@ class MetricValueContainer:
 @dataclasses.dataclass(frozen=True)
 class MetricHandlerContainer:
     main_metric_name: str
-    all: tp.Dict[str, BaseScikitLearnMetricHandler]  # OrderedDict()
+    all: tp.Dict[str, ScikitLearnMetricHandler]  # OrderedDict()
 
+    @wrap_in_logger(level="trace", ignore_args=(0,))
     def __post_init__(self):
         _main_has_been_seen = False
         assert isinstance(self.all, dict), type(self.all)
         assert type(self.all) is OrderedDict
         for metric_name, metric_handler in self.all.items():
-            if not isinstance(metric_handler, BaseScikitLearnMetricHandler):
-                raise TypeError(
-                    "Must be at least sub-instance of"
-                    " BaseScikitLearnMetricHandler class, but"
-                    f" got `{type(metric_handler)}`"
-                )
             if metric_name == self.main_metric_name:
                 _main_has_been_seen |= True
         else:
@@ -40,6 +36,7 @@ class MetricHandlerContainer:
                     f" among the 'all': `{getattr(self, 'all').keys()}`"
                 )
 
+    @wrap_in_logger(level="trace", ignore_args=(0,))
     def __call__(
             self,
             y_true: np.ndarray,  # shape: (bs,) / (bs, class_amount)
@@ -59,6 +56,7 @@ class MetricHandlerContainer:
         )
 
     @classmethod
+    @wrap_in_logger(level="debug", ignore_args=(0,))
     def from_config(cls, cnfg: ManyMetricsConfig) -> 'MetricHandlerContainer':
         return cls(
             cnfg.main,
@@ -66,7 +64,7 @@ class MetricHandlerContainer:
                 [
                     (  # TODO: don't like that name isn't being used
                         one_metric_cnfg.name,
-                        MetricFactory.create_metric(one_metric_cnfg)
+                        ScikitLearnMetricHandler.from_config(one_metric_cnfg)
                     ) for one_metric_cnfg in cnfg.all
                 ]
             )

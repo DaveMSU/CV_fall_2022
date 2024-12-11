@@ -200,9 +200,7 @@ class ProgressMonitor:
                 self._metric_values[mode][metric_name].flush()
             for sub_net_name in self._grads[mode]:
                 self._grads[mode][sub_net_name].flush()
-        if (
-                self.best_moment is None
-        ) or (
+        if (self.best_moment is None) or (
                 self._metrics.all[self._metrics.main_metric_name].is_first_better_than_second(  # noqa
                     self._metric_values[LearningMode.VAL][self._metrics.main_metric_name].value,  # noqa
                     self.best_moment.value
@@ -240,7 +238,7 @@ class ProgressMonitor:
             X: torch.Tensor,  # ndim = int
             Y: torch.Tensor,  # ndim = int
             Y_pred: torch.Tensor,  # ndim = int (same as Y, even shape is)
-            loss: torch.Tensor,
+            loss_value: torch.Tensor,
             cntx: TrainingContext,
     ) -> None:
         assert X.shape[0] == Y.shape[0]
@@ -252,7 +250,7 @@ class ProgressMonitor:
             X_shape=X.shape,
             Y_shape=Y.shape,
             size=X.shape[0],
-            loss_value=loss.cpu().item(),
+            loss_value=loss_value.cpu().item(),
             lr=cntx.optimizer.param_groups[-1]["lr"],
             grads=self._get_grads(cntx.net),
             metrics=self._metrics(

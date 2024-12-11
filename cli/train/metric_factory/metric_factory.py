@@ -1,17 +1,22 @@
-import abc
 import typing as tp
 
 import numpy as np
 import sklearn.metrics
 
-from . import additional_metrics
+from . import additional_metrics, transforms
 from ..learning_config import OneMetricConfig
 from lib import wrap_in_logger
 
 
-class BaseScikitLearnMetricHandler(abc.ABC):
+class ScikitLearnMetricHandler:
     @wrap_in_logger(level="trace", ignore_args=(0,))
-    def __init__(self, metric_type: str, params: tp.Dict[str, tp.Any]):
+    def __init__(
+            self,
+            metric_type: str,
+            params: tp.Dict[str, tp.Any],
+            target_transform: transforms.BaseTransform,
+            prediction_transform: transforms.BaseTransform
+    ):
         # sel._metric_type = metric_type
         self._params = params
         self._metric: tp.Callable[
@@ -22,17 +27,22 @@ class BaseScikitLearnMetricHandler(abc.ABC):
             self._metric = getattr(additional_metrics, metric_type)
         except AttributeError:
             self._metric = getattr(sklearn.metrics, metric_type)
+        self._metric = wrap_in_logger(level="debug")(self._metric)
         self._worst_value = float(self._metric([1, 0], [0, 1]))
         self._best_value = float(self._metric([1, 0], [1, 0]))
         self._bigger_means_better: bool = self._best_value > self._worst_value
+        self._target_transform: transforms.BaseTransform = target_transform
+        self._prediction_transform: transforms.BaseTransform = prediction_transform  # noqa
     
-    @abc.abstractmethod
+    @wrap_in_logger(level="trace", ignore_args=(0,))
     def __call__(
             self,
             y_true: np.ndarray,  # shape: (bs,) / (bs, class_amount)
             y_pred: np.ndarray  # shape: (bs,) / (bs, class_amount)
     ) -> float:
-        raise NotImplementedError
+        y_true = self._target_transform(y_true)
+        y_pred = self._prediction_transform(y_pred)
+        return float(self._metric(y_true, y_pred, **self._params))
 
     def __repr__(self) -> str:
         return (
@@ -59,6 +69,28 @@ class BaseScikitLearnMetricHandler(abc.ABC):
     def worst_value(self) -> float:
         return self._worst_value
 
+    @classmethod
+    def from_config(
+            cls,
+            config: OneMetricConfig
+    ) -> 'ScikitLearnMetricHandler':
+        return cls(
+            config.function,
+            config.params,
+            target_transform=getattr(
+                transforms,
+                config.target_transform.type
+            )(
+                **config.target_transform.params
+            ),
+            prediction_transform=getattr(
+                transforms,
+                config.prediction_transform.type
+            )(
+                **config.prediction_transform.params
+            )
+        )
+
     @wrap_in_logger(level="trace", ignore_args=(0,))
     def is_first_better_than_second(
             self,
@@ -68,55 +100,3 @@ class BaseScikitLearnMetricHandler(abc.ABC):
     ) -> bool:
         return first_value > second_value \
             if self._bigger_means_better else first_value < second_value
-
-
-class _DiscreteScikitLearnMetricHandler(BaseScikitLearnMetricHandler):
-    @wrap_in_logger(level="debug", ignore_args=(0,))
-    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        assert y_true.shape == y_pred.shape
-        assert y_true.ndim in {1, 2}
-        if y_true.ndim == 2:
-            y_true = y_true.argmax(axis=1)
-            y_pred = y_pred.argmax(axis=1)
-        return float(self._metric(y_true, y_pred, **self._params))
-
-
-class _ContinuousScikitLearnMetricHandler(BaseScikitLearnMetricHandler):
-    @wrap_in_logger(level="debug", ignore_args=(0,))
-    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        assert y_true.ndim in {1, 2}
-        return float(self._metric(y_true, y_pred, **self._params))
-
-
-class MetricFactory:
-    _names_of_continuous_metrics = [
-        "log_loss",
-        "log_loss_dev_by_10",
-        "log_loss_diff",
-        "mean_absolute_error",
-        "mean_absolute_percentage_error",
-        "mean_squared_error",
-        "roc_auc_score",
-        "root_mean_squared_error"
-    ]
-    _names_of_discrete_metrics = [
-        "accuracy_score",
-        "balanced_accuracy_score",
-        "f1_score",
-        "precision_score",
-        "recall_score"
-    ]
-
-    @classmethod
-    @wrap_in_logger(level="debug")
-    def create_metric(
-            cls,
-            config: OneMetricConfig
-    ) -> BaseScikitLearnMetricHandler:
-        if config.function in cls._names_of_continuous_metrics:
-            _MetricHandler = _ContinuousScikitLearnMetricHandler
-        elif config.function in cls._names_of_discrete_metrics:
-            _MetricHandler = _DiscreteScikitLearnMetricHandler
-        else:
-            raise ValueError(f"Unknown metric: `{config.function}`")
-        return _MetricHandler(config.function, config.params)

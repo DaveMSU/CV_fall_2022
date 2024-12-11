@@ -10,7 +10,7 @@
             "dump_path": "/var/lib/storage/data/benchmarks/computer_vision/mnist/welded/val_dataset.test",
             "batch_size": 2048,
             "shuffle": false,
-            "drop_last": true
+            "drop_last": false
         }
     },
     "hyper_params": {
@@ -54,12 +54,36 @@
             {
                 "name": "accuracy",
                 "function": "accuracy_score",
-                "params": {}
+                "params": {},
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
             },
             {
                 "name": "balanced_accuracy",
                 "function": "balanced_accuracy_score",
-                "params": {}
+                "params": {},
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
             },
             {
                 "name": "f1_score_macro",
@@ -68,6 +92,18 @@
                     "average": "macro",
                     "labels": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                     "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
                 }
             },
             {
@@ -77,6 +113,18 @@
                     "average": "macro",
                     "labels": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                     "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
                 }
             },
             {
@@ -86,6 +134,18 @@
                     "average": "macro",
                     "labels": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                     "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
                 }
             },
             {
@@ -95,6 +155,18 @@
                     "average": "macro",
                     "multi_class": "ovo",
                     "labels": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "SoftmaxAlongAxis0",
+                    "params": {
+                        "temperature": 1.0
+                    }
                 }
             },
             {
@@ -102,13 +174,31 @@
                 "function": "log_loss",
                 "params": {
                     "normalize": true
+                },
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "SoftmaxAlongAxis0",
+                    "params": {
+                        "temperature": 1.0
+                    }
                 }
             },
             {
-                "name": "log_loss",
-                "function": "log_loss",
-                "params": {
-                    "normalize": false
+                "name": "entropy",
+                "function": "entropy",
+                "params": {},
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "SoftmaxAlongAxis0",
+                    "params": {
+                        "temperature": 1.0
+                    }
                 }
             }
         ]
