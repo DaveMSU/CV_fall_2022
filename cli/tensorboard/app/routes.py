@@ -2,15 +2,14 @@ import os
 import pathlib
 import signal
 
-import flask
-import requests
 import tensorboard
 from multiprocessing import Process
 
 from . import tensorboard_app
 
 
-PREFIX_PATH = pathlib.Path("/var/lib/storage/resources/experiments")  # TODO: param?
+# TODO: may be make PREFIX_PATH a parameter?
+PREFIX_PATH = pathlib.Path("/var/lib/storage/resources/experiments")
 SERVER_PROTOCOL: str = "http"  # TODO: try to move app to https
 LAN_HOST_IP: str = os.environ["LAN_HOST_IP"]
 WAN_HOST_IP: str = os.environ["WAN_HOST_IP"]
@@ -53,7 +52,8 @@ def render_tansorboard(rel_path: str) -> None:
         return (
             "HTTP 404 – Not Found\n"
             "The requested resource could not be located on this server."
-            " Please ensure the specified log directory is correct, and try again."
+            " Please ensure the specified log"
+            " directory is correct, and try again."
         )
     else:
         tb_process = Process(
@@ -74,4 +74,3 @@ def render_tansorboard(rel_path: str) -> None:
             f"{SERVER_PROTOCOL}://{WAN_HOST_IP}:{TENSORBOARD_PORT}"
             "/#scalars&_smoothingWeight=0"
         )
-    

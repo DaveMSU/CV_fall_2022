@@ -27,7 +27,7 @@ def train_add_cmdargs(
         type=str,
         help=(
             "POSIX path to the json file that specifies the"
-            " architecture of the future neural network."  # TODO: give an example below
+            " architecture of the future neural network."  # TODO: example
         )
     )
 
@@ -38,7 +38,7 @@ def train_add_cmdargs(
         help=(
             "POSIX path to the json file that specifies which checkpoint to"
             " use for creation of the neural network instance and that"
-            " specifies the way how train it."  # TODO: give an example below
+            " specifies the way how train it."  # TODO: example
         )
     )
 
@@ -63,7 +63,7 @@ def train_main(cmd_args: argparse.Namespace) -> None:
     if cmd_args.log_level == "INFO":
         seterr(divide='ignore', invalid='ignore')
 
-    with open(cmd_args.architecture_config, "r") as af,\
+    with open(cmd_args.architecture_config, "r") as af, \
             open(cmd_args.learning_config, "r") as lf:
         trainer = Trainer(
             net_arch_config=json.load(af),

@@ -24,7 +24,7 @@ class WelderParams:
     raw_x_to_raw_y_mapper: tp.List[RawSampleId]
 
     inclusion_condition: tp.Callable[[str], bool]
-    RawModelInputOutputPairSample: type  # TODO: maybe use factory function instead, 'type' is too wide?
+    RawModelInputOutputPairSample: type
     transforms: tp.Tuple[
         tp.Callable[
             [raw_sample_pair_handlers.BaseRawModelInputOutputPairSample],
@@ -33,7 +33,7 @@ class WelderParams:
     ]
     repeat_number: int
     dump_path: pathlib.PosixPath
-    
+
     @classmethod
     def from_dict(cls, d: tp.Dict[str, tp.Any]) -> 'WelderParams':
         return cls(
@@ -61,10 +61,10 @@ class WelderParams:
 
 class Welder:
     def __init__(self, params: WelderParams):
-        self._sample_ids: tp.List[RawSampleId] = list(
+        self._sample_ids: tp.List[WelderParams.RawSampleId] = list(
             filter(params.inclusion_condition, params.raw_x_to_raw_y_mapper)
         )
-        
+
         for raw_sample_id in self._sample_ids:
             for field in dataclasses.fields(raw_sample_id):
                 if not (path := getattr(raw_sample_id, field.name)).exists():
@@ -80,7 +80,7 @@ class Welder:
         self._transforms: torch.nn.Sequential = params.transforms
         self._repeat_number: int = params.repeat_number
         self._dump_path: pathlib.PosixPath = params.dump_path
-        
+
     def run(self) -> None:
         with h5py.File(pathlib.Path(self._dump_path), "w") as g:
             _welded_sample = self._get_welded_raw_sample(0)
@@ -98,8 +98,8 @@ class Welder:
             )  # TODO: fix it
             outer_i: int = 0
             for lap in range(self._repeat_number):
-                for inner_i in range(len(self._sample_ids)):  # TODO: speed it up?
-                    assert outer_i == len(self._sample_ids) * lap + inner_i  # noqa
+                for inner_i in range(len(self._sample_ids)):  # TODO: speedup?
+                    assert outer_i == len(self._sample_ids) * lap + inner_i
                     sample = self._get_welded_raw_sample(inner_i)
                     for first_shape, cur_field in [
                           [X_shape_sample, "input"],
@@ -116,14 +116,14 @@ class Welder:
                             )
                     else:
                         assert type(sample.input) is torch.Tensor
-                        hdf5_ds_in[outer_i] = sample.input.numpy()  # noqa
+                        hdf5_ds_in[outer_i] = sample.input.numpy()
                         assert type(sample.output) is torch.Tensor
-                        hdf5_ds_out[outer_i] = sample.output.numpy()  # noqa
+                        hdf5_ds_out[outer_i] = sample.output.numpy()
                         print(outer_i, end="\r")  # TODO: improve logging
                         outer_i += 1
             print()  # TODO: improve logging
             # TODO: return: hdf5_ds.attrs["used_config"] = json.dumps(d)
-    
+
     @property
     def _total_number_of_samples(self):
         return len(self._sample_ids) * self._repeat_number

@@ -1,4 +1,3 @@
-import abc
 import dataclasses
 import logging
 import typing as tp
@@ -40,8 +39,8 @@ class _RunningMeanHandler(tp.Generic[T]):
             assert False, t_type
         return (
             f"{self.__class__.__name__}=("
-                f"_value={value_repr}, "
-                f"_counter={self._counter}"
+                f"_value={value_repr}, "  # noqa: E131
+                f"_counter={self._counter}"  # noqa: E131
             ")"
         )
 
@@ -69,7 +68,7 @@ class _RunningMeanHandler(tp.Generic[T]):
         assert self._value is None
         return self._counter == 0
 
-    @wrap_in_logger(level="debug", ignore_args=(0,))  # TODO: may be debug -> trace
+    @wrap_in_logger(level="debug", ignore_args=(0,))  # TODO: may be trace?
     def flush(self) -> tp.Optional[T]:
         value = self._value
         self.__init__()
@@ -113,7 +112,9 @@ class _BatchStatsRecord:  # TODO: looks like it should be rewritten before GA
     Y_shape: tp.Tuple[int, ...]  # TODO: may be remove this?
     loss_value: float
     lr: float
-    grads: tp.Dict[str, tp.Optional[np.ndarray]]  # sub_ner_name to (int,) shaped np.array
+    grads: tp.Dict[
+        str, tp.Optional[np.ndarray]
+    ]  # sub_ner_name to (int,) - shaped np.array
     metrics: MetricValueContainer
 
 
@@ -173,11 +174,11 @@ class ProgressMonitor:
     def __repr__(self) -> str:  # TODO: fill it
         return (
             f"{self.__class__.__name__}=("
-                f"_last_finished_epoch={self._last_finished_epoch}, "
-                f"_processing_epoch={self._processing_epoch}, " 
-                f"_last_batch_stats={self._last_batch_stats}, "
-                f"_loss_value={self._loss_value}, "
-                "_grads=..."
+                f"_last_finished_epoch={self._last_finished_epoch}, "  # noqa: E131, E501
+                f"_processing_epoch={self._processing_epoch}, "  # noqa: E131
+                f"_last_batch_stats={self._last_batch_stats}, "  # noqa: E131
+                f"_loss_value={self._loss_value}, "  # noqa: E131
+                "_grads=..."  # noqa: E131
             ")"
         )
 
@@ -191,7 +192,8 @@ class ProgressMonitor:
         self._logger.info(f"epoch `{self._processing_epoch}` has started")
 
     @wrap_in_logger(level="debug", ignore_args=(0,))
-    def _exit(self, *args) -> None:  # TODO: looks like has a bug, run with few epoch num
+    def _exit(self, *args) -> None:
+        # TODO: looks like has a bug above, run with few epoch num
         assert type(self._processing_epoch) is int
         for mode in LearningMode:
             self._loss_value[mode].flush()
@@ -201,13 +203,13 @@ class ProgressMonitor:
             for sub_net_name in self._grads[mode]:
                 self._grads[mode][sub_net_name].flush()
         if (self.best_moment is None) or (
-                self._metrics.all[self._metrics.main_metric_name].is_first_better_than_second(  # noqa
-                    self._metric_values[LearningMode.VAL][self._metrics.main_metric_name].value,  # noqa
+                self._metrics.all[self._metrics.main_metric_name].is_first_better_than_second(  # noqa: E501
+                    self._metric_values[LearningMode.VAL][self._metrics.main_metric_name].value,  # noqa: 501
                     self.best_moment.value
                 )
         ):
             self.best_moment: _BestMoment = _BestMoment(
-                value=self._metric_values[LearningMode.VAL][self._metrics.main_metric_name].value,  # noqa
+                value=self._metric_values[LearningMode.VAL][self._metrics.main_metric_name].value,  # noqa: E501
                 epoch=self._processing_epoch
             )
         if self._last_finished_epoch is None:
@@ -242,7 +244,7 @@ class ProgressMonitor:
             cntx: TrainingContext,
     ) -> None:
         assert X.shape[0] == Y.shape[0]
-        assert type(self._processing_epoch) == int
+        assert type(self._processing_epoch) == int  # noqa: E721
         _stats = _BatchStatsRecord(
             number=0 if (
                 stats := self._last_batch_stats[mode]
@@ -308,7 +310,7 @@ class ProgressMonitor:
             f"({self._last_batch_stats[mode].number}-th):"
         )
         self._logger.info(f"size - {self._last_batch_stats[mode].size}")
-        for sub_net_name, vec in self._last_batch_stats[mode].grads.items():  # TODO: reduce the length
+        for sub_net_name, vec in self._last_batch_stats[mode].grads.items():  # noqa: E501
             if vec is not None:
                 _norm: float = (vec ** 2).sum() ** 0.5
                 self._logger.info(f"gradnorm - {sub_net_name} - {_norm}")
@@ -346,8 +348,9 @@ class ProgressMonitor:
             self,
             net: torch.nn.Module
     ) -> tp.Dict[str, tp.Optional[np.ndarray]]:
-        grads: tp.Dict[str, tp.Optional[np.ndarray]] = dict()  # shape: (int,)        
-        for sub_net_name, sub_net in net.named_children():  # TODO: RAM memory bottle neck.
+        grads: tp.Dict[str, tp.Optional[np.ndarray]] = dict()  # shape: (int,)
+        for sub_net_name, sub_net in net.named_children():
+            # TODO: RAM memory bottle neck above
             _gradient = np.array([])
             for param in sub_net.parameters():
                 grad_: tp.Optional[torch.Tensor] = param.grad

@@ -1,6 +1,5 @@
 import json
 import pathlib
-import typing as tp
 
 import numpy as np
 import torch
@@ -10,7 +9,8 @@ from .base import BaseRawModelInputOutputPairSample
 from lib import ModelInputOutputPairSample
 
 
-class ImageAndLabel(BaseRawModelInputOutputPairSample):  # TODO: use meta-class?
+# TODO: use meta-class?
+class ImageAndLabel(BaseRawModelInputOutputPairSample):
     @classmethod
     def create_instance(
             cls,
@@ -19,7 +19,7 @@ class ImageAndLabel(BaseRawModelInputOutputPairSample):  # TODO: use meta-class?
     ) -> 'BaseRawModelInputOutputPairSample':
         with open(output_path, "r") as f:
             label: str = json.load(f)["label_of_the_class"]
-        assert type(label) == str
+        assert type(label) is str
         return cls(
             input=Image.open(input_path).convert('RGB'),
             output=label

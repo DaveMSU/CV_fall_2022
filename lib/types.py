@@ -21,5 +21,5 @@ class ModelInputOutputPairSample:
         self._validate_types()
 
     def _validate_types(self):
-        assert type(self.input) == torch.Tensor
-        assert (self.output is None) or (type(self.output) == torch.Tensor)
+        assert type(self.input) is torch.Tensor
+        assert (self.output is None) or (type(self.output) is torch.Tensor)

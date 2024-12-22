@@ -53,9 +53,10 @@ def wrap_in_logger(level: str, ignore_args: tp.Tuple[int, ...] = ()):
         def wrapper(*args, **kwargs):
             specific_property_mention: str = ""
             for _sp in ["classmethod", "property", "staticmethod"]:
-                if isinstance(func, __builtins__[_sp]):  # TODO: check why it doesn't detect any of them
-                   specific_property_mention = f" ({_sp})"
-                   break
+                if isinstance(func, __builtins__[_sp]):
+                    # TODO: check why above cond doesn't detect any of them
+                    specific_property_mention = f" ({_sp})"
+                    break
             log = getattr(
                 logging.getLogger(
                     f"{func.__qualname__}{specific_property_mention}"

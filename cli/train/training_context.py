@@ -31,7 +31,7 @@ class _LRSchedulerWrapper:
             mode: LearningMode
     ) -> None:
         if updation_level == self._updation_level_to_react_on:
-            if type(self._lr_scheduler) is torch.optim.lr_scheduler.ReduceLROnPlateau:  # noqa
+            if type(self._lr_scheduler) is torch.optim.lr_scheduler.ReduceLROnPlateau:  # noqa: E501
                 if mode == LearningMode.VAL:
                     self._lr_scheduler.step(loss_value)
             else:
@@ -55,13 +55,13 @@ class TrainingContext:  # TODO: deal with _attrs
     def __repr__(self) -> str:
         return (
             "TrainingContext("
-                f"dataloaders={self._dataloaders}, "
-                f"device={self._device}, "
-                "net=torch.nn.Module, "
-                f"loss={self._loss}, "
-                f"lr_scheduler={self._lr_scheduler}, "
-                f"total_epoch_amount={self._total_epoch_amount}, "
-                f"writer={self._writer}"
+                f"dataloaders={self._dataloaders}, "  # noqa: E131
+                f"device={self._device}, "  # noqa: E131
+                "net=torch.nn.Module, "  # noqa: E131
+                f"loss={self._loss}, "  # noqa: E131
+                f"lr_scheduler={self._lr_scheduler}, "  # noqa: E131
+                f"total_epoch_amount={self._total_epoch_amount}, "  # noqa: E131, E501
+                f"writer={self._writer}"  # noqa: E131
             ")"
          )
 
@@ -153,14 +153,15 @@ class TrainingContext:  # TODO: deal with _attrs
             )
 
     @wrap_in_logger(level="debug", ignore_args=(0,))
-    def _init_device(self, learning_config: LearningConfig) -> None:  # TODO: make it a list of devices instead
+    def _init_device(self, learning_config: LearningConfig) -> None:
+        # TODO: make it a list of devices instead
         self._device = torch.device(learning_config.device)
 
     @wrap_in_logger(level="debug", ignore_args=(0,))
     def _init_net(self, net_arch_config: tp.Dict[str, tp.Any]) -> None:
         self._net = NetFactory.create_network(net_arch_config)
         self._net = self._net.to(self._device)
-        
+
     @wrap_in_logger(level="debug", ignore_args=(0,))
     def _init_hyper_params(self, learning_config: LearningConfig) -> None:
         self._loss = getattr(

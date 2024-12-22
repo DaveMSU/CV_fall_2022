@@ -17,7 +17,6 @@ class ScikitLearnMetricHandler:
             target_transform: transforms.BaseTransform,
             prediction_transform: transforms.BaseTransform
     ):
-        # sel._metric_type = metric_type
         self._params = params
         self._metric: tp.Callable[
                 [np.ndarray, np.ndarray],  # shapes: (bs,)
@@ -32,8 +31,8 @@ class ScikitLearnMetricHandler:
         self._best_value = float(self._metric([1, 0], [1, 0]))
         self._bigger_means_better: bool = self._best_value > self._worst_value
         self._target_transform: transforms.BaseTransform = target_transform
-        self._prediction_transform: transforms.BaseTransform = prediction_transform  # noqa
-    
+        self._prediction_transform: transforms.BaseTransform = prediction_transform  # noqa: E501
+
     @wrap_in_logger(level="trace", ignore_args=(0,))
     def __call__(
             self,
@@ -47,17 +46,12 @@ class ScikitLearnMetricHandler:
     def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}("
-                # f"metric_type={self._metric_type}, "
-                f"best_value={self._best_value}, "
-                f"worst_value={self._worst_value}, "
-                f"_bigger_means_better={self._bigger_means_better}"
-                f"_metric={self._metric}, "
+                f"best_value={self._best_value}, "  # noqa: E131
+                f"worst_value={self._worst_value}, "  # noqa: E131
+                f"_bigger_means_better={self._bigger_means_better}"  # noqa: E131, E501
+                f"_metric={self._metric}, "  # noqa: E131
             ")"
         )
-
-    # @property
-    # def metric_type(self) -> str:
-    #     return self._metric_type
 
     @property
     @wrap_in_logger(level="trace", ignore_args=(0,))

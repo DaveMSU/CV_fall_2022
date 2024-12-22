@@ -1,4 +1,3 @@
-import abc
 import dataclasses
 import typing as tp
 from collections import OrderedDict
@@ -44,7 +43,7 @@ class MetricHandlerContainer:
     ) -> MetricValueContainer:
         assert y_true.ndim in [1, 2] and y_pred.ndim in [1, 2]
         assert y_true.shape[0] == y_pred.shape[0]
-        assert (y_true.ndim == y_pred.ndim == 1) or (y_true.shape[1] == y_pred.shape[1])  # noqa
+        assert (y_true.ndim == y_pred.ndim == 1) or (y_true.shape[1] == y_pred.shape[1])  # noqa: E501
         return MetricValueContainer(
             self.main_metric_name,
             OrderedDict(

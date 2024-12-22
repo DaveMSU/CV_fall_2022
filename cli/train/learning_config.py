@@ -148,7 +148,7 @@ class LearningConfig:
                                 k_v[0],
                                 eval(k_v[1])
                             ) if k_v[0] == "lr_lambda" else k_v,
-                            d["hyper_params"]["lr_scheduler"]["params"].items()  # noqa
+                            d["hyper_params"]["lr_scheduler"]["params"].items()  # noqa: E501
                         )
                     )
                 ),

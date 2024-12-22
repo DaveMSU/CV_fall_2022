@@ -60,4 +60,3 @@ def log_loss_diff(
 #     ll_best_const: float = sklearn.metrics.log_loss(y_true, best_const)
 #     ll: float = sklearn.metrics.log_loss(y_true, y_pred)
 #     return (ll_best_const - ll) / norm_coef
-

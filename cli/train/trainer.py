@@ -35,21 +35,27 @@ class Trainer:  # TODO: make it a singleton
     def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}("
-                "TrainingContext=..., "
-                f"ProgressMonitor={self._progress_monitor}"
+                "TrainingContext=..., "  # noqa: E131
+                f"ProgressMonitor={self._progress_monitor}"  # noqa: E131
             ")"
         )
 
     @wrap_in_logger(level="debug")
     def run(self) -> None:  # TODO: return here after Dima's code review
         for epoch in range(self._cntx.total_epoch_amount):
-            # with self._progress_monitor:  # TODO: re-think what epoch is; upd: it also causes ambuguity when expcetion is raised inside of the context manager
+            # with self._progress_monitor:  # TODO: re-think what epoch is; upd: it also causes ambuguity when expcetion is raised inside of the context manager  # noqa: E501
             self._progress_monitor._enter()
             self._process_dataset(LearningMode.TRAIN)
             self._process_dataset(LearningMode.VAL)
             self._progress_monitor._exit()
-            self._progress_monitor.log_updation(UpdationLevel.EPOCH, LearningMode.TRAIN)  # TODO: reduce the length
-            self._progress_monitor.log_updation(UpdationLevel.EPOCH, LearningMode.VAL)  # TODO: reduce the length
+            self._progress_monitor.log_updation(
+                UpdationLevel.EPOCH,
+                LearningMode.TRAIN
+            )
+            self._progress_monitor.log_updation(
+                UpdationLevel.EPOCH,
+                LearningMode.VAL
+            )
             if self._progress_monitor.best_moment.epoch == epoch:
                 self._cntx.save_checkpoint("best")
             self._cntx.save_checkpoint("last")
@@ -67,8 +73,9 @@ class Trainer:  # TODO: make it a singleton
             if mode == LearningMode.TRAIN:
                 self._cntx.optimizer.step()
                 self._cntx.optimizer.zero_grad()
-            self._cntx.lr_scheduler.step(UpdationLevel.GSTEP, batch_loss, mode)  # noqa
-            self._progress_monitor.log_updation(UpdationLevel.GSTEP, mode)  # TODO: may be it should be moved after GA maintainance
+            self._cntx.lr_scheduler.step(UpdationLevel.GSTEP, batch_loss, mode)  # noqa: E501
+            # TODO: may be next line should be moved after GA maintainance
+            self._progress_monitor.log_updation(UpdationLevel.GSTEP, mode)
         self._cntx.lr_scheduler.step(
             UpdationLevel.EPOCH,
             self._progress_monitor.get_running_epoch_loss_value(mode),
