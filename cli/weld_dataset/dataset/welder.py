@@ -8,7 +8,6 @@ import pandas as pd
 import torch
 
 from . import raw_sample_pair_handlers
-# from .welded_sample_pair_handler import ModelInputOutputPairSample
 from lib import ModelInputOutputPairSample
 from . import transforms
 

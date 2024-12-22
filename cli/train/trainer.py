@@ -1,13 +1,10 @@
-# import pathlib
 import typing as tp
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-# from .dataset import HDF5Dataset
 from .learning_config import LearningConfig, UpdationLevel
 from .metric_factory import MetricHandlerContainer
-# from .net_factory import NetFactory
 from .progress_monitor import ProgressMonitor
 from .training_context import TrainingContext
 from lib import (

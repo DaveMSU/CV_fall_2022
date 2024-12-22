@@ -27,11 +27,7 @@ def train_add_cmdargs(
         type=str,
         help=(
             "POSIX path to the json file that specifies the"
-            " architecture of the future neural network."
-            " The config is expected to follow a schema:"
-            "{"
-            "    TODO: fill it"  # TODO: fill it
-            "}"
+            " architecture of the future neural network."  # TODO: give an example below
         )
     )
 
@@ -42,11 +38,7 @@ def train_add_cmdargs(
         help=(
             "POSIX path to the json file that specifies which checkpoint to"
             " use for creation of the neural network instance and that"
-            " specifies the way how train it."
-            " The config is expected to follow a schema:"
-            "{"
-            "    TODO: fill it"  # TODO:  fill it
-            "}"
+            " specifies the way how train it."  # TODO: give an example below
         )
     )
 

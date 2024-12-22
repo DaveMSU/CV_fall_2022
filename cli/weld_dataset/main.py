@@ -1,15 +1,10 @@
 import argparse
 import json
-# import pathlib
-
-# import h5py
-# import torch
 
 from .dataset import (
     Welder,
     WelderParams
 )
-# from lib import ModelInputOutputPairSample
 
 
 def weld_dataset_add_cmdargs(
@@ -28,24 +23,24 @@ def weld_dataset_add_cmdargs(
         "-c", "--config",
         required=True,
         type=str,
-        help=(  # TODO: fix it
+        help=(
             "POSIX path to the json file that specifies a behaviour of"
             " welding of the datasets, the config is expected to be like:"
             "{"
             "    'datasets': ["
             "        {"
-            "            'dump_path': str",
-            "            'type': str",
-            "            'params': {"
-            "                str: tp.Any,"
+            "            'raw_x_to_raw_y_mapper': str,"
+            "            'inclusion_condition': str,"
+            "            'raw_model_input_output_pair_sample_type': str,"
+            "            'transforms': ["
+            "                {"
+            "                    'type': str,"
+            "                    'params': tp.Dict[str, tp.Any]"
+            "                },"
             "                ..."
-            "                'transforms': ["
-            "                    {"
-            "                        'type': str,"
-            "                        'params': tp.Dict[str, tp.Any]"
-            "                    },"
-            "                    ..."
-            "            ]"
+            "            ],"
+            "            'repeat_number': int,"
+            "            'dump_path': str"
             "        },"
             "        ..."
             "    ]"
