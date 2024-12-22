@@ -1,0 +1,397 @@
+{
+    "data": {
+        "train": {
+            "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_7_transfer_learning/welded/train_dataset.test",
+            "batch_size": 128,
+            "shuffle": true,
+            "drop_last": true
+        },
+        "val": {
+            "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_7_transfer_learning/welded/val_dataset.test",
+            "batch_size": 125,
+            "shuffle": false,
+            "drop_last": false
+        }
+    },
+    "hyper_params": {
+        "loss": {
+            "type": "CrossEntropyLoss",
+            "params": {}
+        },
+        "optimizer": {
+            "type": "SGD",
+            "params": {
+                "lr": 0.3
+            }
+        },
+        "lr_scheduler": {
+            "use_after": "gradient_step",
+            "type": "LambdaLR",
+            "params": {
+                "lr_lambda": "lambda gs: 1.0 / (1.0 + 0.0 * gs)"
+            }
+        },
+        "total_epoch_amount": 1000
+    },
+    "device": "cuda:0",
+    "tensorboard_logs": "/var/lib/storage/resources/experiments/cv_fall_2022/lesson_7_transfer_learning/test/tensorboard_runs",
+    "checkpoint_dir": "/var/lib/storage/resources/experiments/cv_fall_2022/lesson_7_transfer_learning/test/checkpoints",
+    "sub_net_outputs_to_visualize": [
+        {
+            "sub_net_name": "backbone",
+            "number_of_vectors": 1,
+            "inclusion_condition": "lambda epoch: (epoch in range(10)) or (epoch in range(100, 105)) or (epoch in range(400, 405)) or (epoch > 995)"
+        }
+    ],
+    "metrics": {
+        "main": "accuracy",
+        "all": [
+            {
+                "name": "accuracy",
+                "function": "accuracy_score",
+                "params": {},
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "f1_score_micro",
+                "function": "f1_score",
+                "params": {
+                    "average": "micro",
+                    "labels": [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                        40, 41, 42, 43, 44, 45, 46, 47, 48, 49
+                    ],
+                    "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "precision_micro",
+                "function": "precision_score",
+                "params": {
+                    "average": "micro",
+                    "labels": [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                        40, 41, 42, 43, 44, 45, 46, 47, 48, 49
+                    ],
+                    "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "recall_micro",
+                "function": "recall_score",
+                "params": {
+                    "average": "micro",
+                    "labels": [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                        40, 41, 42, 43, 44, 45, 46, 47, 48, 49
+                    ],
+                    "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "f1_score_macro",
+                "function": "f1_score",
+                "params": {
+                    "average": "macro",
+                    "labels": [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                        40, 41, 42, 43, 44, 45, 46, 47, 48, 49
+                    ],
+                    "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "precision_macro",
+                "function": "precision_score",
+                "params": {
+                    "average": "macro",
+                    "labels": [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                        40, 41, 42, 43, 44, 45, 46, 47, 48, 49
+                    ],
+                    "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "recall_macro",
+                "function": "recall_score",
+                "params": {
+                    "average": "macro",
+                    "labels": [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                        40, 41, 42, 43, 44, 45, 46, 47, 48, 49
+                    ],
+                    "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "f1_score_weighted",
+                "function": "f1_score",
+                "params": {
+                    "average": "weighted",
+                    "labels": [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                        40, 41, 42, 43, 44, 45, 46, 47, 48, 49
+                    ],
+                    "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "precision_weighted",
+                "function": "precision_score",
+                "params": {
+                    "average": "weighted",
+                    "labels": [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                        40, 41, 42, 43, 44, 45, 46, 47, 48, 49
+                    ],
+                    "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "recall_weighted",
+                "function": "recall_score",
+                "params": {
+                    "average": "weighted",
+                    "labels": [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                        40, 41, 42, 43, 44, 45, 46, 47, 48, 49
+                    ],
+                    "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "roc_auc_macro",
+                "function": "roc_auc_score",
+                "params": {
+                    "average": "macro",
+                    "multi_class": "ovo",
+                    "labels": [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                        40, 41, 42, 43, 44, 45, 46, 47, 48, 49
+                    ]
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "SoftmaxAlongAxis0",
+                    "params": {
+                        "temperature": 1.0
+                    }
+                }
+            },
+            {
+                "name": "roc_auc_weighted",
+                "function": "roc_auc_score",
+                "params": {
+                    "average": "weighted",
+                    "multi_class": "ovo",
+                    "labels": [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                        30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                        40, 41, 42, 43, 44, 45, 46, 47, 48, 49
+                    ]
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "SoftmaxAlongAxis0",
+                    "params": {
+                        "temperature": 1.0
+                    }
+                }
+            },
+            {
+                "name": "log_loss_NORMED",
+                "function": "log_loss",
+                "params": {
+                    "normalize": true
+                },
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "SoftmaxAlongAxis0",
+                    "params": {
+                        "temperature": 1.0
+                    }
+                }
+            },
+            {
+                "name": "entropy",
+                "function": "entropy",
+                "params": {},
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "SoftmaxAlongAxis0",
+                    "params": {
+                        "temperature": 1.0
+                    }
+                }
+            }
+        ]
+    }
+}

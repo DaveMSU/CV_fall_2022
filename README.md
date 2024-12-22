@@ -1,21 +1,26 @@
-# Code for making pools for trainling/validation/etc - make_pool.py
-### Example of running:
+# dl - is the only entrance for all manipulation with deep learning processes.
+
+### weld_dataset: creats welded torch.Tensor in binary format (hdf5) that is ready for DataLoaders, example:
 ```
-python make_pool.py --config=./lesson_X/configs/pool_making/base.json
+./dl weld_dataset --config ./exps/lesson_6_nn_intro/configs/dataset_welding.json
 ```
 
-# Code for training networks, all output you can find at storage/resources - train.py
-### Example of running:
+### train: starts learning process, example:
 ```
-python train.py --net=./lesson_X/configs/architectures/simple_cnn.json --learn=./lesson_X/configs/learning_process/config.json
+./dl train --architecture_config ./exps/lesson_6_nn_intro/configs/architecture.json --learning_config ./exps/lesson_6_nn_intro/configs/learning_process.json --log-level INFO
 ```
 
-# For all raw data like images (png/jpg/...) or labels (csv/txt/...) look into:
+### tensorboard: creates flask server with tensorboard monitoring on it, the only way to launch it:
+```
+./dl tensorboard
+```
+
+# For all raw data like images (png/jpg/...) or labels (csv/txt/...) and welded dataset look into:
 ```
 /var/lib/storage/data
 ```
 
-# For output data like pools, logs, model dumps, etc look into:
+# For output data like logs, model dumps, etc look into:
 ```
 /var/lib/storage/resources
 ```

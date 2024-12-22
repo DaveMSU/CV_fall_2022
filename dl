@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+import pathlib, sys; sys.path.append(  # noqa: E401, E702
+    (pathlib.Path(__file__).parent / "./lib").as_posix()
+)
+
+import argparse
+import logging  # TODO: move it somewhere deeper
+
+from cli.tensorboard import tensorboard_add_cmdargs
+from cli.train import train_add_cmdargs
+from cli.weld_dataset import weld_dataset_add_cmdargs
+
+
+_TRACE_LEVEL = 5
+logging.addLevelName(_TRACE_LEVEL, "TRACE")
+setattr(logging, "TRACE", _TRACE_LEVEL)
+def _trace(self, message, *args, **kwargs):  # noqa: E302
+    if self.isEnabledFor(_TRACE_LEVEL):
+        self._log(_TRACE_LEVEL, message, args if args else None, **kwargs)
+logging.Logger.trace = _trace  # noqa: E305
+
+
+def main():
+    # Create parser.
+    parser = argparse.ArgumentParser(prog="dl")
+    subparsers = parser.add_subparsers(dest="main", metavar="COMMAND")
+    parser.set_defaults(main=(lambda cmdargs: parser.print_help()))
+
+    # Add commands.
+    tensorboard_add_cmdargs(parser, subparsers)
+    train_add_cmdargs(parser, subparsers)
+    weld_dataset_add_cmdargs(parser, subparsers)
+
+    cmd_args: argparse.Namespace = parser.parse_args()
+
+    cmd_args.main(cmd_args)
+
+
+if __name__ == "__main__":
+    main()

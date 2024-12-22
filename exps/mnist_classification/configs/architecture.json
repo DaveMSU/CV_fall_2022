@@ -1,0 +1,80 @@
+{
+    "name": "digit_image_classifier",
+    "layer_type": "NeuralNetwork",
+    "params": {
+        "architecture": [
+            {
+                "name": "backbone",
+                "layer_type": "NeuralNetwork",
+                "params": {
+                    "architecture": [
+                        {
+                            "name": "conv2d_0",
+                            "layer_type": "Conv2d",
+                            "params": {
+                                "in_channels": 3,
+                                "out_channels": 64,
+                                "kernel_size": [3, 3],
+                                "stride": 1,
+                                "padding": 0
+                            }
+                        },
+                        {
+                            "name": "relu_1",
+                            "layer_type": "ReLU",
+                            "params": {}
+                        },
+                        {
+                            "name": "maxpool2d_2",
+                            "layer_type": "MaxPool2d",
+                            "params": {
+                                "kernel_size": [2, 2],
+                                "stride": 2,
+                                "padding": 0
+                            }
+                        },
+                        {
+                            "name": "flatten_3",
+                            "layer_type": "Flatten",
+                            "params": {}
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "head",
+                "layer_type": "NeuralNetwork",
+                "params": {
+                    "architecture": [
+                        {
+                            "name": "linear_4",
+                            "layer_type": "Linear",
+                            "params": {
+                                "in_features": 10816,
+                                "out_features": 128
+                            }
+                        },
+                        {
+                            "name": "relu_5",
+                            "layer_type": "ReLU",
+                            "params": {}
+                        },   
+                        {
+                            "name": "linear_6",
+                            "layer_type": "Linear",
+                            "params": {
+                                "in_features": 128,
+                                "out_features": 10
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "post_process": {
+        "freeze_grad": false,
+        "pretrain": null,
+        "remove_layers": null
+    }
+}
