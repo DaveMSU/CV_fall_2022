@@ -1,0 +1,104 @@
+{
+    "data": {
+        "train": {
+            "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/welded/train_dataset.test",
+            "batch_size": 128,
+            "shuffle": true,
+            "drop_last": true
+        },
+        "val": {
+            "dump_path": "/var/lib/storage/data/cv_fall_2022/lesson_6_nn_intro/welded/val_dataset.test",
+            "batch_size": 64,
+            "shuffle": false,
+            "drop_last": false
+        }
+    },
+    "hyper_params": {
+        "loss": {
+            "type": "MSELoss",
+            "params": {}
+        },
+        "optimizer": {
+            "type": "SGD",
+            "params": {
+                "lr": 10.0
+            }
+        },
+        "lr_scheduler": {
+            "use_after": "gradient_step",
+            "type": "CosineAnnealingWarmRestarts",
+            "params": {
+                "T_0": 45,
+                "T_mult": 2
+            }
+        },
+        "total_epoch_amount": 2000
+    },
+    "device": "cuda:0",
+    "tensorboard_logs": "/var/lib/storage/resources/experiments/cv_fall_2022/lesson_6_nn_intro/test/tensorboard_runs",
+    "checkpoint_dir": "/var/lib/storage/resources/experiments/cv_fall_2022/lesson_6_nn_intro/test/checkpoints",
+    "sub_net_outputs_to_visualize": [
+        {
+            "sub_net_name": "backbone",
+            "number_of_vectors": 1,
+            "inclusion_condition": "lambda epoch: (epoch in range(10)) or (epoch in range(100, 105)) or (epoch in range(400, 405)) or (epoch > 995)"
+        }
+    ],
+    "metrics": {
+        "main": "rmse",
+        "all": [
+            {
+                "name": "mse",
+                "function": "mean_squared_error",
+                "params": {},
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "Identical",
+                    "params": {}
+                }
+            },
+            {
+                "name": "mae",
+                "function": "mean_absolute_error",
+                "params": {},
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "Identical",
+                    "params": {}
+                }
+            },
+            {
+                "name": "mape",
+                "function": "mean_absolute_percentage_error",
+                "params": {},
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "Identical",
+                    "params": {}
+                }
+            },
+            {
+                "name": "rmse",
+                "function": "root_mean_squared_error",
+                "params": {},
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "Identical",
+                    "params": {}
+                }
+            }
+        ]
+    }
+}

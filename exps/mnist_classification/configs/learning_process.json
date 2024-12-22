@@ -1,0 +1,206 @@
+{
+    "data": {
+        "train": {
+            "dump_path": "/var/lib/storage/data/benchmarks/computer_vision/mnist/welded/train_dataset.test",
+            "batch_size": 4096,
+            "shuffle": true,
+            "drop_last": true
+        },
+        "val": {
+            "dump_path": "/var/lib/storage/data/benchmarks/computer_vision/mnist/welded/val_dataset.test",
+            "batch_size": 2048,
+            "shuffle": false,
+            "drop_last": false
+        }
+    },
+    "hyper_params": {
+        "loss": {
+            "type": "CrossEntropyLoss",
+            "params": {}
+        },
+        "optimizer": {
+            "type": "SGD",
+            "params": {
+                "lr": 1.0
+            }
+        },
+        "lr_scheduler": {
+            "use_after": "epoch",
+            "type": "CyclicLR",
+            "params": {
+                "base_lr": 0.0001,
+                "max_lr": 0.8,
+                "mode": "triangular",
+                "step_size_up": 10,
+                "step_size_down": 10,
+                "cycle_momentum": false
+            }
+        },
+        "total_epoch_amount": 1000
+    },
+    "device": "cuda:1",
+    "tensorboard_logs": "/var/lib/storage/resources/experiments/other/mnist/test/tensorboard_runs",
+    "checkpoint_dir": "/var/lib/storage/resources/experiments/other/mnist/test/checkpoints",
+    "sub_net_outputs_to_visualize": [
+        {
+            "sub_net_name": "backbone",
+            "number_of_vectors": 1,
+            "inclusion_condition": "lambda epoch: (epoch in range(10)) or (epoch in range(100, 105)) or (epoch in range(400, 405)) or (epoch > 995)"
+        }
+    ],
+    "metrics": {
+        "main": "accuracy",
+        "all": [
+            {
+                "name": "accuracy",
+                "function": "accuracy_score",
+                "params": {},
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "balanced_accuracy",
+                "function": "balanced_accuracy_score",
+                "params": {},
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "f1_score_macro",
+                "function": "f1_score",
+                "params": {
+                    "average": "macro",
+                    "labels": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "precision_macro",
+                "function": "precision_score",
+                "params": {
+                    "average": "macro",
+                    "labels": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "recall_macro",
+                "function": "recall_score",
+                "params": {
+                    "average": "macro",
+                    "labels": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    "zero_division": 0
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                }
+            },
+            {
+                "name": "roc_auc_macro",
+                "function": "roc_auc_score",
+                "params": {
+                    "average": "macro",
+                    "multi_class": "ovo",
+                    "labels": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                },
+                "target_transform": {
+                    "type": "Argmax",
+                    "params": {
+                        "axis": 1
+                    }
+                },
+                "prediction_transform": {
+                    "type": "SoftmaxAlongAxis0",
+                    "params": {
+                        "temperature": 1.0
+                    }
+                }
+            },
+            {
+                "name": "log_loss_NORMED",
+                "function": "log_loss",
+                "params": {
+                    "normalize": true
+                },
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "SoftmaxAlongAxis0",
+                    "params": {
+                        "temperature": 1.0
+                    }
+                }
+            },
+            {
+                "name": "entropy",
+                "function": "entropy",
+                "params": {},
+                "target_transform": {
+                    "type": "Identical",
+                    "params": {}
+                },
+                "prediction_transform": {
+                    "type": "SoftmaxAlongAxis0",
+                    "params": {
+                        "temperature": 1.0
+                    }
+                }
+            }
+        ]
+    }
+}
